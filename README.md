@@ -14,7 +14,8 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 ├── configs                  # config `json` files for each model
 ├── data                   
 │   ├── data_loader          # custom dataloaders
-│   └── datasets             # datasets used in the projects
+│   ├── datasets             # datasets used in the projects
+│   └── samplers             # custom samplers from torchgeo
 ├──  models                  
 │   ├── base.py              # model super class
 │   ├── resnet18.py          # baseline inspired from `(Yeh&al., 2020)`
