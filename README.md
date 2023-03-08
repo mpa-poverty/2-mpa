@@ -11,15 +11,17 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 
 ### CONTENT
 
-├── configs                  # config `json` files for each model
+```
+├── configs                  # config `json` files for each model  
 ├── data                   
-│   ├── data_loader          # custom dataloaders
-│   ├── datasets             # datasets used in the projects
-│   └── samplers             # custom samplers from torchgeo
+│   ├── data_loader          # custom dataloaders  
+│   ├── datasets             # datasets used in the projects  
+│   └── samplers             # custom samplers from torchgeo  
 ├──  models                  
-│   ├── base.py              # model super class
-│   ├── resnet18.py          # baseline inspired from `(Yeh&al., 2020)`
-│   └── checkpoints          # models checkpoints at training times
+│   ├── base.py              # model super class  
+│   ├── resnet18.py          # baseline inspired from `(Yeh&al., 2020)`  
+│   └── checkpoints          # models checkpoints at training times  
 └── utils                   
-    ├── transfer_learning.py # utils functions to tweak pre-trained networks
+    ├── transfer_learning.py # utils functions to tweak pre-trained networks  
     └── utils.py
+```
