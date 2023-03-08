@@ -1,0 +1,15 @@
+{
+	"in_channels": 8,
+	"out_features": 1,
+	"weights_init": "average",
+	"scaling": 1.0,
+
+	"optimizer": "Adam",
+	"loss": "mse",
+
+	"learning_rate": 1e-3,
+	"batch_size":16,
+	"n_epochs":20,
+	"cuda":true,
+	"log_interval": 50 
+}

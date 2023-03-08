@@ -1,3 +1,8 @@
+'''
+Utils functions to adapt pre-trained networks' layers and weights.
+'''
+
+
 import torch
 import torchvision
 import numpy as np
