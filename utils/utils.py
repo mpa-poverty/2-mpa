@@ -4,9 +4,9 @@ from data import data_loader
 
 def configure_optimizer(config):
     if config.optimizer in ("Adam", "adam"):
-        return torch.optim.Adam(model.parameters(), lr=model.config.lr)
+        return torch.optim.Adam(model.parameters(), lr=model.config.lr, weight_decay=config.weight_decay)
     elif config.optimizer in ("SGD", 'sgd'):
-        return torch.optim.SGD(model.parameters(), lr=model.config.lr)
+        return torch.optim.SGD(model.parameters(), lr=model.config.lr, weight_decay=config.weight_decay)
     else:
         raise KeyError(config.optimizer)
 

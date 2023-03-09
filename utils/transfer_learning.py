@@ -43,6 +43,9 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
    # For now, all weights of added input channels are set to 0. 
    with torch.no_grad():
        n_additional_channels = in_channels - ref_layer.weight.shape[2]
+       # Exception for single channel networks
+       if n_additional_channels < 0:
+           n_additional_channels = in_channels
        # F = 7 for ResNet18 -> need to generalize this 
        additional_weights = np.zeros((7, 7, n_additional_channels, 64))
        if weights_init == 'random':

@@ -28,7 +28,7 @@ class PointGeoSampler(GeoSampler):
   def __init__(
       self,
       dataset: GeoDataset,  ## for exampler raster dataset of sentinel 2
-      point_dataset: GeoDataset,   ## e.g GBIF dataset containing coordinate points 
+      points: GeoDataset,   ## e.g GBIF dataset containing coordinate points 
       roi: Optional[BoundingBox] = None,
       shuffle: bool = False,
       size: Union[Tuple[float, float], float],
