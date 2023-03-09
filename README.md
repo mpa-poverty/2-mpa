@@ -19,7 +19,7 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 │   ├── dual_branch.py        # MS + NL `(Yeh&al., 2020)`  
 │   └── checkpoints           # models checkpoints at training times  
 │  
-├──  tile_with_vec            # package to handle working with both csv and raster data as input      
+├──  tile_with_vec            # package to handle working with both csv and raster data  
 │   ├── datasets.py           # custom dataset backbones for torchgeo   
 │   └── utils                
 │       ├── csv_utils.py      # functions to handle csv data  
