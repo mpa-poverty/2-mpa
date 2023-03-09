@@ -18,8 +18,8 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 │   ├── datasets             # datasets used in the projects  
 │   └── samplers             # custom samplers from torchgeo  
 ├──  models                  
-│   ├── base.py              # model super class  
-│   ├── resnet18.py          # baseline inspired from `(Yeh&al., 2020)`  
+│   ├── resnet18.py          # MS Only `(Yeh&al., 2020)`  
+│   ├── dual_branch.py       # MS + NL `(Yeh&al., 2020)`  
 │   └── checkpoints          # models checkpoints at training times  
 └── utils                   
     ├── transfer_learning.py # utils functions to tweak pre-trained networks  

@@ -10,7 +10,7 @@ from typing import Callable, Iterable, Iterator, Optional, Tuple, Union
 
 import torch
 from rtree.index import Index, Property
-from torch.utils.data import Sample
+from torch.utils.data import Sampler
 
 from torchgeo.datasets import BoundingBox, GeoDataset
 from torchgeo.constants import Units
