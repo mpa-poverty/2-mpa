@@ -1,8 +1,35 @@
-'''
-Custom Torchgeo GeoSampler randomly selecting coordinates 
-in a 'point' dataset first, then returns a tile of the 'scene' 
-dataset centered around the sampled point.
-'''
+import random
+import string
+import pandas as pd
+
+
+
+def read_rows(csv_path:str, rows:list[int]):
+
+    return pd.read_csv(csv_path, skiprows = lambda x: x not in rows)
+
+
+def train_test_split_csv(csv_path:str, cutoff:float=0.5, total_rows:int=None) -> pd.DataFrame:
+    if cutoff > 1:
+        raise ValueError(f"cutoff must be set between 0. and 1.")
+    if total_rows==None:
+        with open(csv_path,"r") as f:
+            total_rows = sum(1 for row in f)
+
+    train_indices = random.sample(range(1,total_rows+1), int(cutoff*total_rows))
+    test_indices = [i for i in range(1, total_rows+1) if i not in train_indices]
+    
+    return train_indices, test_indices
+
+
+
+
+
+
+
+
+
+
 
 
 import abc
@@ -63,6 +90,6 @@ class PointGeoSampler(GeoSampler):
         miny = y-self.size[1]//2
         maxy = y+self.size[1]//2
         yield BoundingBox(minx, miny, maxx, maxy, dataset.bounds.mint, dataset.bounds.maxt)
-
+        
     def __len__(self) -> int:
         return len(self.hits)

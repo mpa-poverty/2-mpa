@@ -1,4 +1,4 @@
-# 2-MPA : MAPPING POVERTY in AFRICA w.r.t MARINE PROTECTED AREAS
+# 2-MPA : MAPPING POVERTY in AFRICA w.r.t. MARINE PROTECTED AREAS
 
 ### REQUIREMENTS
 This code was tested on a system with the following specifications:  
@@ -13,15 +13,18 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 
 ```
 ├── configs                  # config `json` files for each model  
-├── data                   
-│   ├── data_loader          # custom dataloaders  
-│   ├── datasets             # datasets used in the projects  
-│   └── samplers             # custom samplers from torchgeo  
+├── data                     # ignored path, default path to store output and input data  
 ├──  models                  
-│   ├── resnet18.py          # MS Only `(Yeh&al., 2020)`  
-│   ├── dual_branch.py       # MS + NL `(Yeh&al., 2020)`  
-│   └── checkpoints          # models checkpoints at training times  
+│   ├── resnet18.py           # MS Only `(Yeh&al., 2020)`  
+│   ├── dual_branch.py        # MS + NL `(Yeh&al., 2020)`  
+│   └── checkpoints           # models checkpoints at training times  
+│  
+├──  tile_with_vec            # package to handle working with both csv and raster data as input      
+│   ├── datasets.py           # custom dataset backbones for torchgeo   
+│   └── utils                
+│       ├── csv_utils.py      # functions to handle csv data  
+│       └── torchgeo_utils.py # custom torchgeo classes and helper functions  
 └── utils                   
-    ├── transfer_learning.py # utils functions to tweak pre-trained networks  
-    └── utils.py
+    ├── transfer_learning.py  # functions to tweak pre-trained networks  
+    └── utils.py              # misc. helper functions
 ```
