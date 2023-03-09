@@ -53,6 +53,13 @@ class ResNet18(BaseModel):
 
    def train_one_epoch(self):
       self.model.train()
+      # Freeze all parameters
+      if self.config.freeze:
+         for param in self.model.parameters():
+            param.requires_grad = False
+      # Unfreeze last layer
+      for param in self.model.fc.parameters():
+         param.requires_grad = True
       for batch_idx, (data, target) in enumerate(self.data_loader.train_loader):
             data, target = data.to(self.device), target.to(self.device)
             self.optimizer.zero_grad()

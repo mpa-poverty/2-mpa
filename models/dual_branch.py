@@ -94,6 +94,15 @@ class DualBranch(BaseModel):
 
 
    def train(self):
+      # Freeze all parameters
+      if self.config.freeze:
+         for param in self.first_branch.parameters():
+            param.requires_grad = False
+         for param in self.second_branch.parameters():
+            param.requires_grad = False
+      # Unfreeze last layer
+      for param in self.regressor.parameters():
+         param.requires_grad = True
       for epoch in range(1, self.config.n_epoch + 1):
          self.train_one_epoch()
          self.validate()
