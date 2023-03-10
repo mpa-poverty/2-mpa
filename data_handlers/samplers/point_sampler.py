@@ -11,36 +11,36 @@ from torch.samplers import single
 from csv_utils import read_rows
 
 class PointGeoSampler(GeoSampler):
-  """Samples from an intersection of points and image GeoDatasets.
-  This sampler should take in a pair of coordinates and region of interests and
-  returns image patches containing the coordinates of interest.
+  """Samples a bounding box around a given point in an image GeoDataset.
   """
 
   def __init__(
       self,
       dataset: GeoDataset,   # raster dataset
-      rows_list: list[int], # pre_sampled csv rows indices
-      csv_path: str,
+      lat: float, # pre_sampled csv rows indices
+      lon: float,
       size: Union[Tuple[float, float], float],
-      roi: Optional[BoundingBox] = None,
+      year,
+      month=None,
+      day=None,
       units:  Units = Units.PIXELS,
   )-> None:
-
-    super().__init__(dataset, roi)
-    self.rows_list = rows_list
+    
     self.dataset = dataset
-    self.csv = read_rows(csv_path, self.rows_list)
-    . 
-    .
-    .
-    for row in dataset.rows:
-        lon/lat = ... 
-        minx = x-self.size[0]//2
-        maxx = x+self.size[0]//2
-        miny = y-self.size[1]//2
-        maxy = y+self.size[1]//2
-        # warning : time resolution is ambiguous 
-        yield BoundingBox(minx, miny, maxx, maxy, row_year.mint, row_year.maxt)
+    self.lat = lat
+    self.lon = lon
+    self.size = size//2
+    self.year = year
+    self.month = month
+    self.day = day
+    # Bounding box coordinates
+    minx = self.lat - size
+    miny = self.lon - size
+    maxx = self.lat + size
+    maxy = self.lon + size
+    mint, maxt = disambiguate_timestamps(year, month, day)
+
+    yield BoundingBox(minx, miny, maxx, maxy, mint, maxt)
 
     def __len__(self) -> int:
-        return len(self.rows_list)
+        return 1

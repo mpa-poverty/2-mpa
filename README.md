@@ -20,6 +20,6 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 ├──  models                  
 │   ├── resnet18.py      # MS Only `(Yeh&al., 2020)`  
 │   ├── dual_branch.py   # MS + NL `(Yeh&al., 2020)`  
-│   └── checkpoints      # models checkpoints at training times  
-└── utils                # helper functions directory  
+│   └── checkpoints      
+└── utils                
 ```
