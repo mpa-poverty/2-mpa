@@ -12,19 +12,14 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 ### CONTENT
 
 ```
-├── configs                  # config `json` files for each model  
-├── data                     # ignored path, default path to store output and input data  
+├── configs              # config `json` files for each model  
+├── data                 # ignored path, default path to store output and input data  
+├── data_handlers             
+│   ├── datasets         # custom dataset backbones for torchgeo, csv  
+│   └── samplers         # custom samplers for torchgeo               
 ├──  models                  
-│   ├── resnet18.py           # MS Only `(Yeh&al., 2020)`  
-│   ├── dual_branch.py        # MS + NL `(Yeh&al., 2020)`  
-│   └── checkpoints           # models checkpoints at training times  
-│  
-├──  tile_with_vec            # package to handle working with both csv and raster data  
-│   ├── datasets.py           # custom dataset backbones for torchgeo   
-│   └── utils                
-│       ├── csv_utils.py      # functions to handle csv data  
-│       └── torchgeo_utils.py # custom torchgeo classes and helper functions  
-└── utils                   
-    ├── transfer_learning.py  # functions to tweak pre-trained networks  
-    └── utils.py              # misc. helper functions
+│   ├── resnet18.py      # MS Only `(Yeh&al., 2020)`  
+│   ├── dual_branch.py   # MS + NL `(Yeh&al., 2020)`  
+│   └── checkpoints      # models checkpoints at training times  
+└── utils                # helper functions directory  
 ```
