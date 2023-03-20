@@ -42,7 +42,10 @@ class ResNet18(BaseModel):
 
    def load_checkpoints(self, filename):
       # with open(filename, 'r') as f:
-      self.model = torch.load(filename)
+      map_location='cpu'
+      if self.cuda:
+            map_location='cuda'
+      self.model = torch.load(filename, map_location=map_location)
 
 
    def save_checkpoints(self):

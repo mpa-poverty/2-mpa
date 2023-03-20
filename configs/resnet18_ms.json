@@ -12,7 +12,7 @@
 	"weight_decay": 1e-4,
 	"batch_size":16,
 	"n_epochs":20,
-	"cuda":true,
+	"cuda":false,
 	"log_interval": 50,
 
 	"checkpoint_path": "models/checkpoints/B3_rn18_moco_0099_ckpt.pth"
