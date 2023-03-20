@@ -1,31 +1,25 @@
 import torch
-from data import data_loader
 from datetime import datetime, timedelta
+import numpy as np
+import sys
 
-
-def configure_optimizer(config):
-    if config.optimizer in ("Adam", "adam"):
-        return torch.optim.Adam(model.parameters(), lr=model.config.lr, weight_decay=config.weight_decay)
-    elif config.optimizer in ("SGD", 'sgd'):
-        return torch.optim.SGD(model.parameters(), lr=model.config.lr, weight_decay=config.weight_decay)
+def configure_optimizer(model):
+    if model.config['optimizer'] in ("Adam", "adam"):
+        return torch.optim.Adam(model.model.parameters(), lr=model.config['learning_rate'], weight_decay=model.config['weight_decay'])
+    elif model.config['optimizer'] in ("SGD", 'sgd'):
+        return torch.optim.SGD(model.model.parameters(), lr=model.config['learning_rate'], weight_decay=model.config['weight_decay'])
     else:
-        raise KeyError(config.optimizer)
+        raise KeyError(model.config['optimizer'])
 
 
-def configure_loss(config):
-    if config.loss in ("mse", "l2"):
+def configure_loss(model):
+    if model.config['loss'] in ("mse", "l2"):
          return torch.nn.MSELoss()
-    elif config.loss in ("mae", "l1"):
+    elif model.config['loss'] in ("mae", "l1"):
          return torch.nn.L1Loss()
     else:
-        raise KeyError(config.loss)
+        raise KeyError(model.config['loss'])
 
-
-def configure_data_loader(config):
-    if config.data_loader in ("Baseline", "baseline"):
-        return data_loader.BaselineDataLoader(config)
-    else:
-        raise KeyError(config.data_loader)
     
 
 

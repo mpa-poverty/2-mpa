@@ -2,35 +2,34 @@ import torch
 import torchvision
 from torchgeo import models
 from utils import utils, transfer_learning as tl
-from base import BaseModel
-from data import data_loader
+from models.base import BaseModel
 
 
 class ResNet18(BaseModel):
    
    def __init__(self, config):
-      super().__init__()
-      self.model = models.resnet18(weights=models.ResNet18_Weights.SENTINEL2_RGB_MOCO)
-      
+      super().__init__(self)
+      # self.model = torchgeo.models.resnet18(weights=models.ResNet18_Weights.SENTINEL2_RGB_MOCO)
+      self.model = torchvision.models.resnet18(weights=None)
+      self.config = config
       # Adapt model head and tail weights
-      self.model = tl.update_last_layer(self.model, self.config.out_features)
+      self.model = tl.update_last_layer(self.model, self.config['out_features'])
       self.model = tl.update_first_layer(
          self.model, 
-         in_channels=self.config.in_channels, 
-         weights_init=self.config.weights_init
-         scaling=self.config.scaling
+         in_channels=self.config['in_channels'], 
+         weights_init=self.config['weights_init'],
+         scaling=self.config['scaling']
       )
       
       #  Data loader, Loss and Optimizer from the config file 
-      self.data_loader = utils.configure_data_loader(config=config)
-      self.loss = utils.configure_loss(self.config)
-      self.optimizer = utils.configure_optimizer(self.config)
+      self.loss = utils.configure_loss(self)
+      self.optimizer = utils.configure_optimizer(self)
       
       # CUDA flag
       self.is_cuda = torch.cuda.is_available()
-      if self.is_cuda and not self.config.cuda:
+      if self.is_cuda and not self.config['cuda']:
          self.logger.info("WARNING: You have a CUDA device. You can enable CUDA in the config file.")
-      self.cuda = self.is_cuda & self.config.cuda 
+      self.cuda = self.is_cuda & self.config['cuda'] 
 
       # Counters
       self.current_epoch = 0
@@ -42,19 +41,19 @@ class ResNet18(BaseModel):
 
 
    def load_checkpoints(self, filename):
-      path = self.config.checkpoint_path
-      self.model = torch.load(path)
+      # with open(filename, 'r') as f:
+      self.model = torch.load(filename)
 
 
-   def save_checkpoints(self, epoch):
-      path = self.config.checkpoint_path
+   def save_checkpoints(self):
+      path = self.config['checkpoint_path']
       torch.save(self.model, path)
 
 
    def train_one_epoch(self):
       self.model.train()
       # Freeze all parameters
-      if self.config.freeze:
+      if self.config['freeze']:
          for param in self.model.parameters():
             param.requires_grad = False
       # Unfreeze last layer

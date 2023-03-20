@@ -3,6 +3,7 @@
 	"out_features": 1,
 	"weights_init": "average",
 	"scaling": 1.0,
+	"freeze": true,
 
 	"optimizer": "Adam",
 	"loss": "mse",
@@ -12,6 +13,8 @@
 	"batch_size":16,
 	"n_epochs":20,
 	"cuda":true,
-	"log_interval": 50
+	"log_interval": 50,
+
+	"checkpoint_path": "models/checkpoints/B3_rn18_moco_0099_ckpt.pth"
 }
 
