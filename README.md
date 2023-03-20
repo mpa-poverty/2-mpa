@@ -23,3 +23,6 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 │   └── checkpoints      
 └── utils                
 ```
+
+### Notes
+`03-20`: not using `torchgeo` that requires underlying lightning workflow as pre-trained networks provider for now. Instead, we downloaded the checkpoint files directly from SSL4EO [repository](https://github.com/zhu-xlab/SSL4EO-S12). 
