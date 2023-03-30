@@ -27,27 +27,24 @@ class CustomDatasetFromCSV(Dataset):
     def __len__(self):
         return len(self.csv)
 
-    def open_as_array(self, idx, invert=False, rgb_only=True):
-        file = np.array(rio.open(os.path.join(self.root_dir,str(idx)+'.tif')).read())
-        file_rgb = np.nan_to_num(file)
-        file_rgb = file_rgb[:3,:,:]
-        file_rgb = file_rgb.transpose((2,1,0))
-        file_rgb = file_rgb / file_rgb.max()
-        plt.figure()
-        plt.imshow((file_rgb*255).astype(int))
-
-        return
-        
+    
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         tile_name = os.path.join(self.root_dir,
-                                str(idx)+'.tif')
-        tile = skimage.io.imread(tile_name)
+                                str(self.csv.iloc[idx, -1])
+                                )
+        # tile = skimage.io.imread(tile_name)
+        tile = np.array(rio.open(tile_name).read())
+        tile= torch.from_numpy(np.nan_to_num(tile))
         value = self.csv.iloc[idx, -3].astype('float')
         sample = {'tile': tile, 'value': value}
 
         if self.transform:
-            sample = self.transform(sample)
+            sample['tile'] = self.transform(sample['tile'])
 
         return sample
+    
+    def set_transform(self, transform):
+        self.transform = transform
+        return
