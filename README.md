@@ -23,6 +23,6 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 │   └── checkpoints      
 ├──  preprocessing       # notebooks to reproduce downloading and prep'ing the data   
 │   ├── 0_download_tiles.ipynb 
-│   ├── 1_crop_tiles.ipynb
+│   └── 1_crop_tiles.ipynb
 └── utils                
 ```
