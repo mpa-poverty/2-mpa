@@ -21,8 +21,8 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 │   ├── resnet18.py      # MS Only `(Yeh&al., 2020)`  
 │   ├── dual_branch.py   # MS + NL `(Yeh&al., 2020)`  
 │   └── checkpoints      
+├──  preprocessing       # notebooks to reproduce downloading and prep'ing the data   
+│   ├── 0_download_tiles.ipynb 
+│   └── 1_crop_tiles.ipynb
 └── utils                
 ```
-
-### Notes
-`03-20`: not using `torchgeo` that requires underlying lightning workflow as pre-trained networks provider for now. Instead, we downloaded the checkpoint files directly from SSL4EO [repository](https://github.com/zhu-xlab/SSL4EO-S12). 
