@@ -98,3 +98,5 @@ class ResNet18(BaseModel):
       for epoch in range(1, self.config.n_epoch + 1):
          self.train_one_epoch()
          self.validate()
+   
+   
