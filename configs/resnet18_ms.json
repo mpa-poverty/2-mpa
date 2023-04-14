@@ -3,18 +3,18 @@
 	"out_features": 1,
 	"weights_init": "average",
 	"scaling": 1.0,
-	"freeze": true,
+	"freeze": false,
 
 	"optimizer": "Adam",
 	"loss": "mse",
 
 	"learning_rate": 1e-3,
-	"weight_decay": 1e-4,
-	"batch_size":16,
-	"n_epochs":20,
-	"cuda":false,
-	"log_interval": 50,
+	"weight_decay": 4e-2,
+	"batch_size":64,
+	"n_epochs":150,
+	"cuda":true,
+	"log_interval": 1000,
 
-	"checkpoint_path": "models/checkpoints/B3_rn18_moco_0099_ckpt.pth"
+	"checkpoint_path": "models/checkpoints/rn18_ms_ckpt.pth"
 }
 
