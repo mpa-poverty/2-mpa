@@ -1,12 +1,13 @@
 import torch 
 import torchvision
+import sklearn
+
 from utils import utils, transfer_learning as tl
-from models.base import BaseModel
 
 
 class ResNet18(BaseModel):
    
-   def __init__(self, config, train_set, val_set):
+   def __init__(self, config, train_set, val_set, test_set):
       super().__init__(self)
       self.model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.DEFAULT)
       self.config = config
@@ -33,8 +34,27 @@ class ResNet18(BaseModel):
       self.current_iteration = 0
 
       # Data Loader
-      self.train_loader = torch.utils.data.DataLoader(train_set, batch_size=self.config['batch_size'], shuffle=True)
-      self.val_loader = torch.utils.data.DataLoader(val_set, batch_size=self.config['batch_size'], shuffle=True)
+      self.train_loader = torch.utils.data.DataLoader(
+          train_set, 
+          batch_size=self.config['batch_size'], 
+          shuffle=True,
+          num_workers=2,
+          pin_memory=True
+      )
+      self.val_loader = torch.utils.data.DataLoader(
+          val_set,
+          batch_size=self.config['batch_size'],
+          shuffle=True,
+          num_workers=2,
+          pin_memory=True
+      )
+      self.test_loader = torch.utils.data.DataLoader(
+          test_set,
+          batch_size=1,
+          shuffle=True,
+          num_workers=2,
+          pin_memory=True
+      )
 
 
    def forward(self, x):
@@ -71,7 +91,7 @@ class ResNet18(BaseModel):
             data, target = data.to(self.device), target.to(self.device)
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.loss(output, target)
+            loss = self.loss(output, target.view(-1,1))
             loss.backward()
             self.optimizer.step()
             if batch_idx % self.config['log_interval'] == 0:
@@ -83,26 +103,35 @@ class ResNet18(BaseModel):
    def validate(self):
       self.model = self.model.to(self.device)
       self.model.eval()
-      test_loss = 0
-      correct = 0
+      val_loss = 0
       with torch.no_grad():
          for couple in self.val_loader:
                data, target = couple['tile'].float(), couple['value'].float()
                data, target = data.to(self.device), target.to(self.device)
                output = self.model(data)
-               test_loss += self.loss(output, target).item()  # sum up batch loss
-               pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
-               correct += pred.eq(target.view_as(pred)).sum().item()
+               val_loss += self.loss(output, target.view(-1,1)).item()  # sum up batch loss
 
-      test_loss /= len(self.val_loader.dataset)
-      print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-         test_loss, correct, len(self.val_loader.dataset),
-         100. * correct / len(self.val_loader.dataset)))
+      val_loss /= len(self.val_loader.dataset)
+      print('\nTest set: Average loss: {:.4f}', val_loss)
 
 
    def train(self):
       for epoch in range(1, self.config["n_epochs"] + 1):
+         self.current_epoch = epoch
          self.train_one_epoch()
          self.validate()
    
-   
+   def eval(self):
+      self.model = self.model.to('cpu')
+      self.model.eval()
+      inputs = []
+      outputs = []
+      with torch.no_grad():
+         for couple in self.test_loader:
+               data, target = couple['tile'].float(), couple['value'].float()
+               data, target = data.to('cpu'), target.to('cpu')
+               output = self.model(data)
+               outputs.append( output.numpy() )
+               print
+               inputs.append( target )
+      return inputs, outputs

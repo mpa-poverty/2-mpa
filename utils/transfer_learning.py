@@ -62,5 +62,23 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
         new_layer.weight *= scaling
         model.conv1 = new_layer
 
-        return model
+    return model
 
+
+def s2_to_landsat(model : torch.nn.Module) -> torch.nn.Module:
+    """Updates the 13-bands sentinel-2 pretrained model to a 8-bands landsat one.
+
+    Args:
+        model (n.Module): model to be updated
+    """
+    conv1 = model.conv1
+    new_layer = torch.nn.Conv2d(in_channels=7, out_channels=64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+
+    s2_bands_to_keep = np.array([ 1, 2, 3, 7, 10, 11 ])
+    with torch.no_grad():
+        new_weights = np.zeros((64, 7, 7, 7))
+        for band in range(len(s2_bands_to_keep)):
+            new_layer.weight[:,band,:,:] = conv1.weight[:,s2_bands_to_keep[band],:,:]
+    
+    model.conv1 = new_layer
+    return model

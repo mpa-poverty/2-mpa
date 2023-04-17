@@ -35,12 +35,10 @@ class CustomDatasetFromDataFrame(Dataset):
         tile = np.array(rio.open(tile_name).read())
         tile= torch.from_numpy(np.nan_to_num(tile))
         value = self.dataframe.iloc[idx, -2].astype('float')
-        sample = {'tile': tile, 'value': value}
-
         if self.transform:
-            sample['tile'] = self.transform(sample['tile'])
+            tile = self.transform(tile)
 
-        return sample
+        return tile, value
     
     def set_transform(self, transform):
         self.transform = transform
