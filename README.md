@@ -13,16 +13,13 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 
 ```
 ├── configs              # config `json` files for each model  
-├── data                 # ignored path, default path to store output and input data  
-├── data_handlers             
-│   ├── datasets         # custom dataset backbones for torchgeo, csv  
-│   └── samplers         # custom samplers for torchgeo               
-├──  models                  
+├── data                 # ignored path, default path to store datas
+├── data_handlers        # custom Dataset / DataLoader for torch            
+├── models                 
 │   ├── resnet18.py      # MS Only `(Yeh&al., 2020)`  
-│   ├── dual_branch.py   # MS + NL `(Yeh&al., 2020)`  
 │   └── checkpoints      
-├──  preprocessing       # notebooks to reproduce downloading and prep'ing the data   
-│   ├── 0_download_tiles.ipynb 
-│   └── 1_crop_tiles.ipynb
-└── utils                
+├── preprocessing        # notebooks to reproduce downloading and prep'ing the data   
+├── utils 
+├── test.py   
+└── train.py                
 ```
