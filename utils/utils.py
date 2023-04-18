@@ -1,5 +1,7 @@
 import torch
 
+MAX_VALUE = 2.643941
+MIN_VALUE = -1.3713919
 
 def configure_optimizer( config, model ):
     if config['optimizer'] in ("Adam", "adam"):
@@ -17,3 +19,11 @@ def configure_loss( config ):
          return torch.nn.L1Loss()
     else:
         raise KeyError(config['loss'])
+    return
+
+
+def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
+    return (asset- min_asset) / (max_asset - min_asset)
+
+def denormal(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
+    return asset * (max_asset - min_asset) + min_asset

@@ -22,12 +22,14 @@ def build_from_config( base_model :torch.nn.Module, config_file :str )-> torch.n
         config = json.load(f)
     
     if not config['transfer']:
-        model = tl.update_first_layer(
-            base_model, 
-            in_channels=config['in_channels'], 
-            weights_init=config['weights_init'],
-            scaling=config['scaling']
-        )
+        # model = tl.update_first_layer(
+        #     base_model, 
+        #     in_channels=config['in_channels'], 
+            # weights_init=config['weights_init'],
+        #     scaling=config['scaling']
+        # )
+        model = tl.s2_to_landsat(base_model)
+
     else:
         model = tl.s2_to_landsat(base_model)
         for param in model.parameters():

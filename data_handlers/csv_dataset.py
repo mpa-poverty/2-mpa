@@ -5,7 +5,7 @@ import os
 import numpy as np
 from torch.utils.data import Dataset
 import rasterio as rio
-
+from utils import utils
 
 class CustomDatasetFromDataFrame(Dataset):
 
@@ -38,7 +38,12 @@ class CustomDatasetFromDataFrame(Dataset):
         if self.transform:
             tile = self.transform(tile)
 
-        return tile, value
+        # Normalize tile
+        tile_max = tile.max(dim=0).values
+        tile_normed = tile / tile_max
+        value = utils.normalize_asset(value)
+
+        return tile_normed, value
     
     def set_transform(self, transform):
         self.transform = transform
