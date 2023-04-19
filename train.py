@@ -1,8 +1,9 @@
 import torch
+import numpy as np
 from tqdm import tqdm
 from typing import Dict, List
 import torchmetrics
-
+from scipy.stats import pearsonr
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -12,24 +13,21 @@ def train_step(model: torch.nn.Module,
                loss_fn: torch.nn.Module, 
                optimizer: torch.optim.Optimizer,
                device:torch.device,
-               metric
-               ):
+               r2):
     # Put model in train mode
     model.train()
-    r2 = torchmetrics.R2Score()
-    
     # Setup train loss and train accuracy values
-    train_loss, train_r2 = 0, 0
-    Y_true, Y_pred = None, None
+    train_loss = 0
     # Loop through data loader data batches
+    score = []
     for batch, (X, y) in enumerate(dataloader):
+        
         # Send data to target device
         X, y = X.float(), y.float()
         X, y = X.to(device), y.to(device)
 
         # 1. Forward pass
         y_pred = model(X)
-
         # 2. Calculate  and accumulate loss
         loss = loss_fn(y_pred, y.view(-1,1))
         train_loss += loss.item() 
@@ -44,19 +42,24 @@ def train_step(model: torch.nn.Module,
         optimizer.step()
 
         # Registrate values for R2 estimation
-        if Y_true is None:
-          Y_true = y.view(-1,1)
-          Y_pred = y_pred
-        else:
-          Y_true = torch.cat((Y_true, y.view(-1,1)))
-          Y_pred = torch.cat((Y_pred, y_pred))
+        # if Y_true is None:
+        #   Y_true = y.view(-1,1)
+        #   Y_pred = y_pred
+        # else:
+        #   Y_true = torch.cat((Y_true, y.view(-1,1)))
+        #   Y_pred = torch.cat((Y_pred, y_pred))
+         #computing r squared
+        # output=y_pred.detach().cpu().numpy()
+        # target=y.detach().cpu().numpy()
+        # output=np.squeeze(output)
+        # target=np.squeeze(target)
 
-    # Adjust metrics to get average loss and accuracy per batch 
+        score.append(r2(y_pred, y.view(-1,1)))
+
     train_loss = train_loss / len(dataloader)
-    # R2 estimation for epoch
-    train_r2 = metric( Y_true.flatten(), Y_pred.flatten() )
+    total_score = sum(score)/len(score)
 
-    return train_loss, train_r2
+    return train_loss, total_score
 
 
 
@@ -64,43 +67,33 @@ def val_step(model: torch.nn.Module,
               dataloader: torch.utils.data.DataLoader, 
               loss_fn: torch.nn.Module,
               device: torch.device,
-              metric
-              ):
+              r2):
     # Put model in eval mode
     model.eval() 
     
-    
+    score=[]
     # Setup test loss and test accuracy values
-    test_loss, test_r2 = 0, 0
-    Y_true, Y_pred = None, None
+    test_loss = 0
     # Turn on inference context manager
-    with torch.inference_mode():
-        # Loop through DataLoader batches
-        for batch, (X, y) in enumerate(dataloader):
-            # Send data to target device
-            X, y = X.float(), y.float()
-            X, y = X.to(device), y.to(device)
+    # with torch.inference_mode():
+  # Loop through DataLoader batches
+    for batch, (X, y) in enumerate(dataloader):
+        # Send data to target device
+        X, y = X.float(), y.float()
+        X, y = X.to(device), y.to(device)
+        # 1. Forward pass
+        y_pred = model(X)
 
-            # 1. Forward pass
-            y_pred = model(X)
+        # 2. Calculate and accumulate loss
+        loss = loss_fn(y_pred, y.view(-1,1))
+        test_loss += loss.item()
+        
+        score.append(r2(y_pred, y.view(-1,1)))
 
-            # 2. Calculate and accumulate loss
-            loss = loss_fn(y_pred, y.view(-1,1))
-            test_loss += loss.item()
-            
-           # Registrate values for R2 estimation
-            if Y_true is None:
-              Y_true = y.view(-1,1)
-              Y_pred = y_pred
-            else:
-              Y_true = torch.cat((Y_true, y.view(-1,1)))
-              Y_pred = torch.cat((Y_pred, y_pred))
-
+    total_score = sum(score)/len(score)
     # Adjust metrics to get average loss and accuracy per batch 
     test_loss = test_loss / len(dataloader)
-    # R2 estimation for epoch
-    test_r2 = metric( Y_true.flatten(), Y_pred.flatten() )
-    return test_loss, test_r2
+    return test_loss, total_score
 
 
 
@@ -113,7 +106,6 @@ def train(model: torch.nn.Module,
           epochs: int,
           batch_size: int,
           in_channels: int,
-          metric,
           device: torch.device,
           writer: torch.utils.tensorboard.writer.SummaryWriter
         ) -> Dict[str, List]:
@@ -155,20 +147,25 @@ def train(model: torch.nn.Module,
                "test_loss": [],
                "test_r2": []
     }
-    
+    r2 = torchmetrics.R2Score()
+    r2 = r2.to(device)
     # Loop through training and testing steps for a number of epochs
+    test_loss, test_r2 = 0.1, 0.0
     for epoch in tqdm(range(epochs)):
         train_loss, train_r2 = train_step(model=model,
                                            dataloader=train_dataloader,
                                            loss_fn=loss_fn,
                                            optimizer=optimizer,
-                                           metric=metric,
-                                           device=device)
-        test_loss, test_r2 = val_step(model=model,
+                                           device=device,
+                                           r2=r2)
+        
+        if epoch%5==1:
+          test_loss, test_r2 = val_step(model=model,
                                         dataloader=val_dataloader,
                                         loss_fn=loss_fn,
-                                        metric=metric,
-                                        device=device)
+                                        device=device,
+                                        r2=r2)
+        
         scheduler.step(test_loss)
         # Print out what's happening
         print(

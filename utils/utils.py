@@ -25,5 +25,5 @@ def configure_loss( config ):
 def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
     return (asset- min_asset) / (max_asset - min_asset)
 
-def denormal(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
+def denormalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
     return asset * (max_asset - min_asset) + min_asset

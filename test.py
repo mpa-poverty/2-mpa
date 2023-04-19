@@ -1,17 +1,17 @@
 import torch
+import numpy as np
+from scipy.stats import pearsonr
 
 
 def test(model: torch.nn.Module, 
         dataloader: torch.utils.data.DataLoader, 
-        r2
+        device
         ):
     
     # Put model in eval mode
     model.eval() 
-    device: torch.device
-    
-    test_r2 = 0, 0
-    Y_true, Y_pred = None, None
+    score = []
+    Y_true, Y_pred = np.array([]), np.array([])
     # Turn on inference context manager
     with torch.inference_mode():
         # Loop through DataLoader batches
@@ -23,17 +23,16 @@ def test(model: torch.nn.Module,
             # 1. Forward pass
             y_pred = model(X)
             
-            # Registrate values for R2 estimation
-            if Y_true is None:
-                Y_true = y.view(-1,1)
-                Y_pred = y_pred
-            else:
-                Y_true = torch.cat((Y_true, y.view(-1,1)))
-                Y_pred = torch.cat((Y_pred, y_pred))
+            output=y_pred.view(-1,1).detach().cpu().numpy()
+            target=y.detach().cpu().numpy()
+            output=np.squeeze(output)
+            output=np.nan_to_num(output)
+            target=np.squeeze(target)
+            target=np.nan_to_num(target)
 
-    # R2
-    test_r2 = r2( Y_true.flatten(), Y_pred.flatten() )
-    if device == 'cpu':
-        return test_r2, Y_true.detach().numpy(), Y_pred.detach().numpy()
-    return test_r2, Y_true.to('cpu').detach().numpy(), Y_pred.to('cpu').detach().numpy()
+            score.append(pearsonr(target, output)[0]**2)
+            Y_true = np.concatenate((Y_true,target))
+            Y_pred = np.concatenate((Y_pred,output))
+    total_score = sum(score)/len(score)
+    return total_score, Y_true, Y_pred
     
