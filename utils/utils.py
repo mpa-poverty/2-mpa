@@ -1,4 +1,7 @@
 import torch
+from GPUtil import showUtilization as gpu_usage
+from numba import cuda
+
 
 MAX_VALUE = 2.643941
 MIN_VALUE = -1.3713919
@@ -27,3 +30,12 @@ def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
 
 def denormalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
     return asset * (max_asset - min_asset) + min_asset
+
+def free_gpu_cache():
+    gpu_usage()                
+    cuda.select_device(0)
+    torch.cuda.empty_cache()
+    cuda.close()
+    cuda.select_device(0)
+    gpu_usage()
+    return 

@@ -28,10 +28,10 @@ def build_from_config( base_model :torch.nn.Module, config_file :str )-> torch.n
             # weights_init=config['weights_init'],
         #     scaling=config['scaling']
         # )
-        model = tl.s2_to_landsat(base_model)
+        model = tl.s2_to_landsat(base_model,config['scaling'])
 
     else:
-        model = tl.s2_to_landsat(base_model)
+        model = tl.s2_to_landsat(base_model, scaling=config['scaling'])
         for param in model.parameters():
             param.requires_grad = False
 

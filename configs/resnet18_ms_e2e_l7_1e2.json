@@ -3,16 +3,16 @@
 	
 	"in_channels": 7,
 	"out_features": 1,
-	"scaling": 0.4,
+	"scaling": 0.75,
 
 	"optimizer": "Adam",
 	"loss": "mse",
 
-	"learning_rate": 1e-2,
-	"weight_decay": 1e-2,
-	"batch_size":128,
-	"n_epochs":150,
+	"learning_rate": 1e-3,
+	"weight_decay": 1e-4,
+	"batch_size":64,
+	"n_epochs":50,
 
-	"checkpoint_path": "models/checkpoints/rn18_ms_e2e.pth"
+	"checkpoint_path": "models/checkpoints/rn18_ms_e2e"
 }
 
