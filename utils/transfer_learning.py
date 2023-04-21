@@ -36,8 +36,11 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
        _scaling_ can lower the initial weights to avoid biased image representation.
        Especially recommended when shifting domains.'''
     ref_layer = model.conv1
+    rgb_weights = ref_layer.weight
+
     new_layer = torch.nn.Conv2d(in_channels=in_channels, out_channels=64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False) 
     # For now, all weights of added input channels are set to 0. 
+    # swaping red - blue channels.
 
     with torch.no_grad():
         n_additional_channels = in_channels - ref_layer.weight.shape[2]
@@ -46,7 +49,6 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
             n_additional_channels = in_channels
         # F = 7 for ResNet18 -> need to generalize this 
         additional_weights = np.zeros((7, 7, n_additional_channels, 64))
-        rgb_weights = ref_layer.weight
         if weights_init == 'random':
             rgb_mean = np.mean(rgb_weights)
             rgb_std = np.std(rgb_weights)
@@ -56,10 +58,13 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
             additional_weights = np.tile(rgb_mean, (1, 1, n_additional_channels, 1))
         else:
             raise ValueError(f'Unknown weight initialization method')
+        
         for i in range(n_additional_channels):
-            new_layer.weight[:,(in_channels-n_additional_channels)+i:] = torch.from_numpy(additional_weights)
+            new_layer.weight[:,(in_channels-n_additional_channels)+i,:,:] = torch.from_numpy(additional_weights)
         # Scaling 
         new_layer.weight *= scaling
+        new_layer.weight[:,:3,:,:] = rgb_weights
+
         model.conv1 = new_layer
 
     return model
@@ -76,7 +81,6 @@ def s2_to_landsat(model : torch.nn.Module, scaling:float) -> torch.nn.Module:
 
     s2_bands_to_keep = np.array([ 1, 2, 3, 7, 10, 11 ])
     with torch.no_grad():
-        new_weights = np.zeros((64, 7, 7, 7))
         for band in range(len(s2_bands_to_keep)):
             new_layer.weight[:,band,:,:] = conv1.weight[:,s2_bands_to_keep[band],:,:] * scaling
     

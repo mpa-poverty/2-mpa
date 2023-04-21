@@ -37,14 +37,14 @@ class CustomDatasetFromDataFrame(Dataset):
         value = self.dataframe.iloc[idx, -2].astype('float')
         if self.transform:
             tile = self.transform(tile)
-
         # Normalize tile
-        tile_max = tile.max(dim=0).values
-        tile_normed = tile / tile_max
+        tile_max =324.4
+        tile_min = -0.0994
+        tile_normed = (tile-tile_min) / (tile_max-tile_min)
         value = utils.normalize_asset(value)
 
         return tile_normed, value
     
     def set_transform(self, transform):
         self.transform = transform
-        return
+        return 
