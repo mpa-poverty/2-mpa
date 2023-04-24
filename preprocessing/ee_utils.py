@@ -132,6 +132,9 @@ def mask_qaclear(img: ee.Image) -> ee.Image:
     cloud_mask = qam.select('pxqa_cloud')
     return img.updateMask(cloudshadow_mask).updateMask(snow_mask).updateMask(cloud_mask)
 
+# def normalize_nightlights(img: ee.Image, min_val:float, max_val:float) -> ee.Image:
+#     return (img - min_val) / (max_val - min_val)
+
 
 def add_latlon(img: ee.Image) -> ee.Image:
     '''Creates a new ee.Image with 2 added bands of longitude and latitude
@@ -151,11 +154,16 @@ def composite_nl(year: int) -> ee.Image:
     '''
     if year <= 2011:
         img_col = ee.ImageCollection('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4')
+        min_val = 0
+        max_val = 6060.6
     else:
-        img_col = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG')
-
+        img_col = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMCFG')
+        min_val = -1.5
+        max_val = 193565
+    
     start_date, end_date = predictionyear_to_range(year)
-    return img_col.filterDate(start_date, end_date).median().select([0], ['NIGHTLIGHTS'])
+    return img_col.filterDate(start_date, end_date).median().select([0], ['NIGHTLIGHTS']).unitScale(min_val, max_val)
+  
 
 
 def tfexporter(collection: ee.FeatureCollection, export: str, prefix: str,
@@ -318,9 +326,11 @@ class LandsatSR:
         self.end_date = end_date
 
         self.l8 = self.init_coll('LANDSAT/LC08/C01/T1_SR').map(self.rename_l8).map(self.rescale_l8)
+        self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
         self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
 
-        self.merged = self.l5.merge(self.l8).sort('system:time_start')
+        self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start')
+        # self.merged = self.l5.merge(self.l8).sort('system:time_start')
 
     def init_coll(self, name: str) -> ee.ImageCollection:
         '''
