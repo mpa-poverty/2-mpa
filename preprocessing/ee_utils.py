@@ -37,33 +37,8 @@ def df_to_fc(df: pd.DataFrame, lat_colname: str = 'lat',
 
     return ee.FeatureCollection(ee_features)
 
-'''
-def surveyyear_to_range(survey_year: int, nl: bool = False) -> Tuple[str, str]:
-    Returns the start and end dates for filtering satellite images for a
-    survey beginning in the specified year.
-    Calibrated DMSP Nighttime Lights only exist for 3 relevant date ranges,
-    which Google Earth Engine filters by their start date. For more info, see
-    https://www.ngdc.noaa.gov/eog/dmsp/download_radcal.html.
-        DMSP range               | we use for these surveys
-        -------------------------|-------------------------
-        2010-01-11 to 2011-07-31 | 2006 to 2011
-        2010-01-11 to 2010-12-09 | 2006 to 2011
-        2005-11-28 to 2006-12-24 | 2003 to 2005
-    Args
-    - survey_year: int, year that survey was started
-    - nl: bool, whether to use special range for night lights
-    Returns
-    - start_date: str, represents start date for filtering satellite images
-    - end_date: str, represents end date for filtering satellite images
-    
-    if survey_year == 2018:
-        start_date = '2017-1-1'
-        end_date = '2019-12-31'
-    else:
-        raise ValueError(f'Invalid survey_year: {survey_year}. '
-                         'Must be between 2009 and 2022 (inclusive)')
-    return start_date, end_date
-'''
+
+
 def predictionyear_to_range(survey_year: int) -> Tuple[str, str]:
     '''Returns the start and end dates for filtering satellite images for
    the prediction year. We want a median 3 years 
@@ -154,15 +129,11 @@ def composite_nl(year: int) -> ee.Image:
     '''
     if year <= 2011:
         img_col = ee.ImageCollection('NOAA/DMSP-OLS/CALIBRATED_LIGHTS_V4')
-        min_val = 0
-        max_val = 6060.6
     else:
         img_col = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMCFG')
-        min_val = -1.5
-        max_val = 193565
-    
+
     start_date, end_date = predictionyear_to_range(year)
-    return img_col.filterDate(start_date, end_date).median().select([0], ['NIGHTLIGHTS']).unitScale(min_val, max_val)
+    return img_col.filterDate(start_date, end_date).median().select([0], ['NIGHTLIGHTS'])
   
 
 

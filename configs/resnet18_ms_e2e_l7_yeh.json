@@ -1,0 +1,20 @@
+{
+	"transfer": false,
+	"dual":false,
+	
+	"in_channels": 7,
+	"out_features": 1,
+	"weights_init": "average",
+	"scaling": 0.57,
+
+	"optimizer": "Adam",
+	"loss": "mse",
+
+	"learning_rate": 1e-3,
+	"weight_decay": 1e-2,
+	"batch_size":64,
+	"n_epochs":25,
+
+	"checkpoint_path": "models/checkpoints/rn18_ms_e2e_l7_yeh"
+}
+

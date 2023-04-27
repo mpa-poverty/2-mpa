@@ -23,6 +23,16 @@ def truncated_normal(t, mean=0.0, std=0.01):
       t = torch.where(cond, torch.nn.init.normal_(torch.ones(t.shape), mean=mean, std=std), t)
     return t
 
+def update_single_layer(model):
+    "drops input channels from 3 to 1 -- NIGHTLIGHTS"
+    conv1 = model.conv1
+    rgb_weights = conv1.weight
+    new_layer = torch.nn.Conv2d(in_channels=1, out_channels=64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False) 
+    with torch.no_grad():
+        new_layer.weight[:,0,:,:] = rgb_weights[:,0,:,:]
+        model.conv1 = new_layer
+
+    return model
     
 def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
     '''changes the first Conv2d layer to take in iputs as many _in_channels_
@@ -64,7 +74,7 @@ def update_first_layer(model, in_channels, weights_init='random', scaling=1.):
         # Scaling 
         new_layer.weight *= scaling
         new_layer.weight[:,:3,:,:] = rgb_weights
-
+        
         model.conv1 = new_layer
 
     return model

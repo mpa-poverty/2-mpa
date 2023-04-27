@@ -1,10 +1,7 @@
 import torch
-from GPUtil import showUtilization as gpu_usage
-from numba import cuda
+import numpy as np
 
-
-MAX_VALUE = 2.643941
-MIN_VALUE = -1.3713919
+# 
 
 def configure_optimizer( config, model ):
     if config['optimizer'] in ("Adam", "adam"):
@@ -24,18 +21,20 @@ def configure_loss( config ):
         raise KeyError(config['loss'])
     return
 
+# OBSOLETE
+# MAX_VALUE = 2.643941
+# MIN_VALUE = -1.3713919
+# def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
+#     return (asset- min_asset) / (max_asset - min_asset)
 
-def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
-    return (asset- min_asset) / (max_asset - min_asset)
+# def denormalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
+#     return asset * (max_asset - min_asset) + min_asset
 
-def denormalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
-    return asset * (max_asset - min_asset) + min_asset
 
-def free_gpu_cache():
-    gpu_usage()                
-    cuda.select_device(0)
-    torch.cuda.empty_cache()
-    cuda.close()
-    cuda.select_device(0)
-    gpu_usage()
-    return 
+def compute_average_crossval_results(results:dict):
+    result_list=[]
+    for fold in results:
+        fold_result = [np.array(results[fold]['test_r2'][i].cpu().numpy())[()] for i in range(len(results[fold]['test_r2']))]
+        result_list.append(fold_result)
+    result_list = np.mean( np.array( result_list ), axis=0 )
+    return result_list
