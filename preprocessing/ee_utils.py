@@ -270,7 +270,6 @@ def wait_on_tasks(tasks: Mapping[Any, ee.batch.Task],
 
             if state in done_states:
                 progbar.update(1)
-
                 if state == ee.batch.Task.State.FAILED:
                     state = (state, status['error_message'])
                 elapsed_ms = status['update_timestamp_ms'] - status['creation_timestamp_ms']

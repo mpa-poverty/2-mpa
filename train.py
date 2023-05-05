@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from tqdm import tqdm
 from typing import Dict, List
 from scipy.stats import pearsonr
 
@@ -19,7 +20,7 @@ def train_step(model: torch.nn.Module,
     train_loss = 0
     # Loop through data loader data batches
     score = []
-    for batch, (X, y) in enumerate(dataloader):        
+    for batch, (X, y) in enumerate(tqdm(dataloader)):        
         # Send data to target device
         X, y = X.float(), y.float()
         X, y = X.to(device), y.to(device)
@@ -62,7 +63,7 @@ def val_step(model: torch.nn.Module,
   # Loop through DataLoader batches
     with torch.inference_mode():
 
-      for batch, (X, y) in enumerate(dataloader):
+      for batch, (X, y) in enumerate(tqdm(dataloader)):
           # Send data to target device
           X, y = X.float(), y.float()
           X, y = X.to(device), y.to(device)
@@ -200,13 +201,13 @@ def dual_train_step(model: torch.nn.Module,
     train_loss = 0
     # Loop through data loader data batches
     score = []
-    for batch, (x1, x2, y) in enumerate(dataloader):        
+    for batch, (x1, x2, y) in enumerate(tqdm(dataloader)):        
         model.train()
         
         # Send data to target device
         x1, x2, y = x1.float(), x2.float(), y.float()
         x1, x2, y =  x1.to(device), x2.to(device), y.to(device)
-
+  
         # 1. Forward pass
         y_pred = model(x1, x2)
         # 2. Calculate  and accumulate loss
@@ -245,7 +246,7 @@ def dual_val_step(model: torch.nn.Module,
   # Loop through DataLoader batches
     with torch.no_grad():
 
-      for batch, (x1,x2, y) in enumerate(dataloader):
+      for batch, (x1,x2, y) in enumerate(tqdm(dataloader)):
           
           # Send data to target device
           x1, x2, y = x1.float(), x2.float(), y.float()
