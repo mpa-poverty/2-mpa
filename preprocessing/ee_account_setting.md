@@ -1,4 +1,4 @@
-# Set up a new EE account, step-by-step guide
+# Quickly Set-up an EE-account
 
 ### Sign-up for Earth-Engine
 Before going further, you need to register an Google Earth Engine account @ https://code.earthengine.google.com using any gmail address you have access to. This process may take a couple of days. Without registration, the `ee.Initialize()` will not work. And this is mandatory to use the earth-engine API to access, handle and download the data.
