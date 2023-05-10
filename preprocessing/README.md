@@ -1,7 +1,9 @@
 # PREPROCESSING STEPS
 Please execute the notebooks in naming order. We discuss each of them briefly below.
 ### Step 0: Download TFRecords
-> Important Note: To set up the data from scratch, e.g. to use Google's Earth Engine (EE)services, there are a few steps to follow to set up the EE account and link its activity to your personal drive [here](ee_account_setting.md)
+> Prior to executing this first notebook, you need set make sure you have access to an earth-engine `service-account`  
+> or to set up one following the steps [here](ee_account_setting.md).  
+
 The first notebook downloads TFRecords using the helper functions provided by `ee_utils.py`.  
 This code is taken from @Yeh_2020 repository and is manually updated to 2023 TensorFlow changes as well as earth-engine data availability.  
 Please note that Google Earth Engine limits the number of simultaneous query to 3000. You might want to set up a checkpoint depending on your `CHUNK_SIZE`.
