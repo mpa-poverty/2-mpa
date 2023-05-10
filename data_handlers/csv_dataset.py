@@ -72,16 +72,18 @@ class CustomDatasetFromDataFrame(Dataset):
                 new_arr = data[BANDS[i]][0].numpy().reshape((255,255))
                 tiles.append(new_arr)
             tile = np.swapaxes(np.array(tiles), 0, 2 )
-
+        
         tile= torch.from_numpy(np.nan_to_num(tile))
-        if self.transform:
-            tile = self.transform(tile)
+        
 
         for i in range(8):
             tile[i] = (tile[i]-self.tile_min[i]) / (self.tile_max[i]-self.tile_min[i])
         ms_tile = tile[:7,:,:]
+        if self.transform:
+            ms_tile = self.transform(ms_tile)
         if self.nl:
             nl_tile = tile[7:,:,:]
             return ms_tile, nl_tile, value
+        
         return ms_tile, value
         

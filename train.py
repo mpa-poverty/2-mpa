@@ -20,7 +20,8 @@ def train_step(model: torch.nn.Module,
     train_loss = 0
     # Loop through data loader data batches
     score = []
-    for batch, (X, y) in enumerate(tqdm(dataloader)):        
+    for batch, (X, y) in enumerate(tqdm(dataloader)):    
+            
         # Send data to target device
         X, y = X.float(), y.float()
         X, y = X.to(device), y.to(device)
