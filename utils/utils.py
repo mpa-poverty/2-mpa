@@ -1,6 +1,8 @@
 import torch
 import numpy as np
-
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point, Polygon
 # 
 
 def configure_optimizer( config, model ):
@@ -38,3 +40,24 @@ def compute_average_crossval_results(results:dict):
         result_list.append(fold_result)
     result_list = np.mean( np.array( result_list ), axis=0 )
     return result_list
+
+    
+def convert_csv_to_epsg(csv_name, from_epsg="EPSG:4326", to_epsg="EPSG:3857"):
+    # creating a geometry column 
+    dataset = pd.read_csv(csv_name)
+    geometry = [Point(xy) for xy in zip(dataset['lon'], dataset['lat'])]
+    crs = {'init': from_epsg}
+    # Creating a Geographic data frame 
+    gdf = gpd.GeoDataFrame(dataset, crs=crs, geometry=geometry)
+    gdf = gdf.to_crs(to_epsg)
+    return gdf
+
+def add_bounding_box_from_geometry(row, resolution=30, extent=127):
+    offset = extent * resolution
+    p= row.geometry
+    xmin, ymin, xmax, ymax = p.x - offset, p.y - offset, p.x + offset, p.y + offset
+    bounding_box = Polygon([
+        (xmin, ymin), (xmin, ymax), (xmax, ymax), (xmax, xmin), (xmin, ymin)
+    ])
+    return bounding_box
+

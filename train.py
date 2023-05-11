@@ -94,6 +94,7 @@ def train(model: torch.nn.Module,
           in_channels: int,
           device: torch.device,
           writer: torch.utils.tensorboard.writer.SummaryWriter,
+          ckpt_path: str,
           r2
         ) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
@@ -149,6 +150,7 @@ def train(model: torch.nn.Module,
                                       r2=r2)
         scheduler.step(test_loss)
         # Print out what's happening
+        torch.save(model.state_dict(), ckpt_path)
         print(
           f"Epoch: {epoch+1} | "
           f"train_loss: {train_loss:.4f} | "

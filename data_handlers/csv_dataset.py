@@ -1,13 +1,11 @@
 import torch
-import pandas as pd
 from torch.utils.data import Dataset
 import os
-import glob
 import numpy as np
 from torch.utils.data import Dataset
-import rasterio as rio
-from utils import utils
-from tfrecord.torch.dataset import TFRecordDataset
+from osgeo import gdal
+
+# from preprocessing.tfrecord.torch.dataset import TFRecordDataset
 
 
 
@@ -54,24 +52,36 @@ class CustomDatasetFromDataFrame(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         row = self.dataframe.iloc[idx]
+        # tile_name = os.path.join(self.root_dir,
+        #                          str(row.country)+"_"+str(row.year),
+        #                          str(row.cluster)+".tfrecord"
+        #                          )                 
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
-                                 str(row.cluster)+".tfrecord"
-                                 )                 
-                                
+                                 str(row.cluster)+".tif"
+                                 )     
+        
+        
+        import numpy as np
+        raster = gdal.Open(tile_name)
+        tile = np.empty([8,255,255])
+        for band in range( raster.RasterCount ):
+            tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
+        # with rio.open(tile_name, 'r') as raster:
+        #     tile = raster.read()  # read all raster values          
         value = row.wealthpooled.astype('float')
-        dataset = TFRecordDataset(tile_name, 
-                                 index_path=None, 
-                                 description=DESCRIPTOR)
-        loader = torch.utils.data.DataLoader(dataset, batch_size=1)
-        iterator = iter(loader)
-        tiles = []
-        tile = None
-        while (data := next(iterator, None)) is not None:
-            for i in range(len(BANDS)):
-                new_arr = data[BANDS[i]][0].numpy().reshape((255,255))
-                tiles.append(new_arr)
-            tile = np.swapaxes(np.array(tiles), 0, 2 )
+        # # dataset = TFRecordDataset(tile_name, 
+        # #                          index_path=None, 
+        # #                          description=DESCRIPTOR)
+        # # loader = torch.utils.data.DataLoader(dataset, batch_size=1)
+        # # iterator = iter(loader)
+        # # tiles = []
+        # # tile = None
+        # # while (data := next(iterator, None)) is not None:
+        # #     for i in range(len(BANDS)):
+        # #         new_arr = data[BANDS[i]][0].numpy().reshape((255,255))
+        # #         tiles.append(new_arr)
+        # #     tile = np.swapaxes(np.array(tiles), 0, 2 )
         
         tile= torch.from_numpy(np.nan_to_num(tile))
         
