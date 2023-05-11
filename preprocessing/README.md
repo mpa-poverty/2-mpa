@@ -1,7 +1,9 @@
 # PREPROCESSING STEPS
 Please execute the notebooks in naming order. We discuss each of them briefly below.
 ### Step 0: Download TFRecords
-> Important Note: To set up the data from scratch, e.g. to use Google's Earth Engine (EE)services, there are a few steps to follow to set up the EE account and link its activity to your personal drive [here](ee_account_setting.md)
+> Prior to executing this first notebook, you need set make sure you have access to an earth-engine `service-account`  
+> or to set up one following the steps [here](ee_account_setting.md).  
+
 The first notebook downloads TFRecords using the helper functions provided by `ee_utils.py`.  
 This code is taken from @Yeh_2020 repository and is manually updated to 2023 TensorFlow changes as well as earth-engine data availability.  
 Please note that Google Earth Engine limits the number of simultaneous query to 3000. You might want to set up a checkpoint depending on your `CHUNK_SIZE`.
@@ -9,16 +11,20 @@ By executing this notebook completely, and by downloading the archives from your
 ```
 data/
     DHS_EXPORT_FOLDER/
-        angola_2011_00.tfrecord.gz
-        ...
-        zimbabwe_2015_XX.tfrecord.gz   
+        Drive_archive.zip/
+            angola_2011_00.tfrecord.gz
+            ...
+            zimbabwe_2015_XX.tfrecord.gz   
 ```
+Although depending on how you fractioned the download process and where you downloaded your drive files from, you might end up with subfolders in the tree.  
+Regardless, you have to put all the archives from the Drive in data subfolder of your choice and decompress them from here.
+
 ### Step 1: Process TFRecords
-We're still following Yeh's footsteps here. This notebook merges the chunks from previous steps into per-data point tfrecords.
+We're still following Yeh's footsteps here. This notebook decompressmerges the chunks from previous steps into per-data-point tfrecords. 
 
 ### Step 2: Transform TFRecords
 We then transform each TFRecord into a TIF file, which arguably takes more space but avoid having to rely on TensorFlow from now on, from a Pytorch workflow veiwpoint.  
-We also compute the minimum and maximum values for each band across the whole dataset and normalize the data between 0 and 1.
+We also compute the minimum and maximum values for each band across the whole dataset. We will use these values to normalize the data in our dataset.
 
 ### Step 3: Create Incountry Folds
 This step is mandatory to perform spatially aware cross-validation to obtain a robust model.  
