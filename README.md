@@ -13,7 +13,8 @@ This code requires `Python >= ` with `Pytorch v.`, `Torchvision >=` and `Torchge
 
 ```
 ├── configs              # config `json` files for each model  
-├── data                 # ignored path, default path to store datas
+├── data                 # ignored path, default path to store data\
+│   └── ...dataset.csv   # available datasets in csv format 
 ├── data_handlers        # custom Dataset / DataLoader for torch            
 ├── models                 
 │   ├── resnet18.py      # MS Only `(Yeh&al., 2020)`  
