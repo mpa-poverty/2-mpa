@@ -4,7 +4,7 @@ import os
 import numpy as np
 from torch.utils.data import Dataset
 from osgeo import gdal
-
+import torchvision
 # from preprocessing.tfrecord.torch.dataset import TFRecordDataset
 
 
@@ -93,7 +93,10 @@ class CustomDatasetFromDataFrame(Dataset):
             ms_tile = self.transform(ms_tile)
         if self.nl:
             nl_tile = tile[7:,:,:]
+            nl_transforms = torch.nn.Sequential(
+                torchvision.transforms.CenterCrop(size=224)
+            )
+            nl_tile = nl_transforms(nl_tile)
             return ms_tile, nl_tile, value
-        
         return ms_tile, value
         

@@ -277,6 +277,7 @@ def dual_train(model: torch.nn.Module,
           epochs: int,
           batch_size: int,
           in_channels: int,
+          ckpt_path:str,
           device: torch.device,
           writer: torch.utils.tensorboard.writer.SummaryWriter,
           r2
@@ -333,6 +334,8 @@ def dual_train(model: torch.nn.Module,
                                       device=device,
                                       r2=r2)
         scheduler.step(test_loss)
+        torch.save(model.state_dict(), ckpt_path)
+
         # Print out what's happening
         print(
           f"Epoch: {epoch+1} | "
@@ -364,7 +367,7 @@ def dual_train(model: torch.nn.Module,
         # Track the PyTorch model architecture
         # writer.add_graph(model=model, 
         #                  # Pass in an example input
-        #                  input_to_model=torch.randn(batch_size, in_channels, 256, 256).to(device))
+        #                  input_to_model=torch.randn(batch_size, in_channels, 224, 224).to(device))
     
     # Close the writer
     writer.close()

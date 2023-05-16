@@ -29,3 +29,5 @@ We also compute the minimum and maximum values for each band across the whole da
 ### Step 3: Create Incountry Folds
 This step is mandatory to perform spatially aware cross-validation to obtain a robust model.  
 The code is taken from @Yeh_2020, still, and produces spatial folds from the dataset indices.
+
+> Once all the spteps are completed, if disk space is a concern, feel free to delete any remaining non-`TIF` file. 
