@@ -1,4 +1,5 @@
 import torch
+import pickle
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -61,3 +62,27 @@ def add_bounding_box_from_geometry(row, resolution=30, extent=127):
     ])
     return bounding_box
 
+
+def make_config_picklefile(
+        path:str,
+        csv_path:str,
+        fold_path:str,
+        mean, 
+        std, 
+        max_, 
+        min_,
+        train_transform,
+        test_transform
+    ):
+    config_file=dict()
+    config_file['csv']=csv_path
+    config_file['fold']=fold_path
+    config_file['mean']=mean
+    config_file['std']=std
+    config_file['max']=max_
+    config_file['min']=min_
+    config_file['train_transform']=train_transform
+    config_file['test_transform']=test_transform
+    with open(path, 'wb') as f:
+        pickle.dump(config_file, f, protocol=pickle.HIGHEST_PROTOCOL)
+    return config_file

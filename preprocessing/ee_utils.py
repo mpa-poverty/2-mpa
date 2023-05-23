@@ -296,12 +296,11 @@ class LandsatSR:
         self.end_date = end_date
 
         self.l8 = self.init_coll('LANDSAT/LC08/C01/T1_SR').map(self.rename_l8).map(self.rescale_l8)
-        self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-        self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-
+        # self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
+        # self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
         # PICK ONE OF THE OPTIONS BELOW, WETHER TO INCLUDE L7 DATA OR NOT.
         # self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start')
-        self.merged = self.l5.merge(self.l8).sort('system:time_start')
+        self.merged = self.l8.sort('system:time_start')
 
     def init_coll(self, name: str) -> ee.ImageCollection:
         '''

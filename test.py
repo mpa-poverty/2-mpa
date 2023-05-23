@@ -15,7 +15,7 @@ def test(model: torch.nn.Module,
     # Turn on inference context manager
     with torch.inference_mode():
         # Loop through DataLoader batches
-        for batch, (X, y) in enumerate(dataloader):
+        for _, (X, y) in enumerate(dataloader):
             # Send data to target device
             X, y = X.float(), y.float()
             X, y = X.to(device), y.to(device)

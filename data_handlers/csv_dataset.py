@@ -51,11 +51,7 @@ class CustomDatasetFromDataFrame(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]
-        # tile_name = os.path.join(self.root_dir,
-        #                          str(row.country)+"_"+str(row.year),
-        #                          str(row.cluster)+".tfrecord"
-        #                          )                 
+        row = self.dataframe.iloc[idx]            
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
@@ -66,25 +62,9 @@ class CustomDatasetFromDataFrame(Dataset):
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
-            tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        # with rio.open(tile_name, 'r') as raster:
-        #     tile = raster.read()  # read all raster values          
+            tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()          
         value = row.wealthpooled.astype('float')
-        # # dataset = TFRecordDataset(tile_name, 
-        # #                          index_path=None, 
-        # #                          description=DESCRIPTOR)
-        # # loader = torch.utils.data.DataLoader(dataset, batch_size=1)
-        # # iterator = iter(loader)
-        # # tiles = []
-        # # tile = None
-        # # while (data := next(iterator, None)) is not None:
-        # #     for i in range(len(BANDS)):
-        # #         new_arr = data[BANDS[i]][0].numpy().reshape((255,255))
-        # #         tiles.append(new_arr)
-        # #     tile = np.swapaxes(np.array(tiles), 0, 2 )
-        
-        tile= torch.from_numpy(np.nan_to_num(tile))
-        
+        tile= torch.from_numpy(np.nan_to_num(tile))     
 
         for i in range(8):
             tile[i] = (tile[i]-self.tile_min[i]) / (self.tile_max[i]-self.tile_min[i])

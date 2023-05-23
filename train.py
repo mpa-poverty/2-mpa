@@ -1,10 +1,6 @@
 import torch
-import numpy as np
 from tqdm import tqdm
 from typing import Dict, List
-from scipy.stats import pearsonr
-
-
 
 
 
@@ -90,10 +86,7 @@ def train(model: torch.nn.Module,
           scheduler: torch.optim.lr_scheduler,
           loss_fn: torch.nn.Module,
           epochs: int,
-          batch_size: int,
-          in_channels: int,
           device: torch.device,
-          writer: torch.utils.tensorboard.writer.SummaryWriter,
           ckpt_path: str,
           r2
         ) -> Dict[str, List]:
@@ -113,7 +106,6 @@ def train(model: torch.nn.Module,
       loss_fn: A PyTorch loss function to calculate loss on both datasets.
       epochs: An integer indicating how many epochs to train for.
       device: A target device to compute on (e.g. "cuda" or "cpu").
-      writer: SummaryWriter instance.
       
     Returns:
       A dictionary of training and testing loss as well as training and
@@ -164,27 +156,6 @@ def train(model: torch.nn.Module,
         results["train_r2"].append(train_r2)
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2)
-
-        ### New: Experiment tracking ###
-        # Add loss results to SummaryWriter
-        writer.add_scalars(main_tag="Loss", 
-                           tag_scalar_dict={"train_loss": train_loss,
-                                            "test_loss": test_loss},
-                           global_step=epoch)
-
-        # Add accuracy results to SummaryWriter
-        writer.add_scalars(main_tag="R2", 
-                           tag_scalar_dict={"train_r2": train_r2,
-                                            "test_r2": test_r2}, 
-                           global_step=epoch)
-        
-        # Track the PyTorch model architecture
-        writer.add_graph(model=model, 
-                         # Pass in an example input
-                         input_to_model=torch.randn(batch_size, in_channels, 224, 224).to(device))
-    
-    # Close the writer
-    writer.close()
     
     ### End new ###
 
@@ -275,11 +246,8 @@ def dual_train(model: torch.nn.Module,
           scheduler: torch.optim.lr_scheduler,
           loss_fn: torch.nn.Module,
           epochs: int,
-          batch_size: int,
-          in_channels: int,
           ckpt_path:str,
           device: torch.device,
-          writer: torch.utils.tensorboard.writer.SummaryWriter,
           r2
         ) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
@@ -350,29 +318,6 @@ def dual_train(model: torch.nn.Module,
         results["train_r2"].append(train_r2)
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2)
-
-        ### New: Experiment tracking ###
-        # Add loss results to SummaryWriter
-        writer.add_scalars(main_tag="Loss", 
-                           tag_scalar_dict={"train_loss": train_loss,
-                                            "test_loss": test_loss},
-                           global_step=epoch)
-
-        # Add accuracy results to SummaryWriter
-        writer.add_scalars(main_tag="R2", 
-                           tag_scalar_dict={"train_r2": train_r2,
-                                            "test_r2": test_r2}, 
-                           global_step=epoch)
-        
-        # Track the PyTorch model architecture
-        # writer.add_graph(model=model, 
-        #                  # Pass in an example input
-        #                  input_to_model=torch.randn(batch_size, in_channels, 224, 224).to(device))
-    
-    # Close the writer
-    writer.close()
-    
     ### End new ###
-
     # Return the filled results at the end of the epochs
     return results
