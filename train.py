@@ -204,11 +204,13 @@ def dual_train_step(model: torch.nn.Module,
 
 
 
-def dual_val_step(model: torch.nn.Module, 
+def dual_val_step(
+              model: torch.nn.Module, 
               dataloader: torch.utils.data.DataLoader, 
               loss_fn: torch.nn.Module,
               device: torch.device,
-              r2):
+              r2
+              ):
     # Put model in eval mode
     model.eval() 
 

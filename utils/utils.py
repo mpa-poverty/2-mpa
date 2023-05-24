@@ -86,3 +86,4 @@ def make_config_picklefile(
     with open(path, 'wb') as f:
         pickle.dump(config_file, f, protocol=pickle.HIGHEST_PROTOCOL)
     return config_file
+

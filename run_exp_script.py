@@ -4,6 +4,7 @@ import pickle
 import sys
 import pandas as pd
 import torch 
+import numpy as np
 import torchmetrics
 import torchvision
 from models.from_config import build_from_config
@@ -11,8 +12,9 @@ from models.double_branch import DoubleBranchCNN
 from data_handlers.csv_dataset import CustomDatasetFromDataFrame
 from utils import utils, transfer_learning as tl
 from train import train, dual_train
+from sklearn.model_selection  import train_test_split
 
-DATA_DIR = 'data/'
+DATA_DIR = 'data/landsat_7/'
 
 def cross_val_training(model, model_config, data_config, r2, device, results):
     
@@ -20,9 +22,9 @@ def cross_val_training(model, model_config, data_config, r2, device, results):
         fold_dict = pickle.load(f)
     dataset = pd.read_csv(data_config['csv'])
     for fold in fold_dict:
-        train_dataset = CustomDatasetFromDataFrame(dataset.iloc[fold_dict[fold]['train']], DATA_DIR, transform=data_config['train_transform'],tile_max=data_config['max_'],
-                                        tile_min=data_config['min_'] )
-        val_dataset = CustomDatasetFromDataFrame(dataset.iloc[fold_dict[fold]['val']], DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max_'],
+        train_dataset = CustomDatasetFromDataFrame(dataset.iloc[fold_dict[fold]['train']], DATA_DIR, transform=data_config['train_transform'],tile_max=data_config['max'],
+                                        tile_min=data_config['min'] )
+        val_dataset = CustomDatasetFromDataFrame(dataset.iloc[fold_dict[fold]['val']], DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max'],
                                         tile_min=data_config['min'] )     
         train_loader = torch.utils.data.DataLoader(
             train_dataset, 
@@ -54,29 +56,34 @@ def cross_val_training(model, model_config, data_config, r2, device, results):
             ckpt_path=model_config['checkpoint_path']+"_"+str(fold)+".pth",
             r2=r2
         )
-        with open( model_config['result_path'], "wb" ) as f:
+        with open( model_config['result_path']+".pkl", "wb" ) as f:
             pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         
     return results
 
 
-def full_training(model, model_config, data_config, r2, device, results):
-    train_csv = pd.read_csv('data/madagascar_train_dataset.csv')
-    test_csv = pd.read_csv('data/madagascar_test_dataset.csv')
-    train_set = CustomDatasetFromDataFrame(train_csv, DATA_DIR, transform=data_config['train_transform'],tile_max=data_config['max_'],
-                                        tile_min=data_config['min_'] )
-    test_set = CustomDatasetFromDataFrame(test_csv, DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max_'],
-                                        tile_min=data_config['min'] )     
+def fourfold_training(model, model_config, data_config, r2, device, results):
+    with open(data_config['fold'], 'rb') as f:
+        fold_dict = pickle.load(f)
+    # dataset.iloc[fold_dict[fold]['test']]
+    dataset = pd.read_csv(data_config['csv'])
+    
+    train_indices = np.concatenate((fold_dict['B']['test'],fold_dict['C']['test'],fold_dict['D']['test'],fold_dict['E']['test']))
+    test_indices = fold_dict['A']['test']
+    train_dataset = CustomDatasetFromDataFrame(dataset.iloc[train_indices], DATA_DIR, transform=data_config['train_transform'],tile_max=data_config['max'],
+                                        tile_min=data_config['min'] )
+    test_dataset = CustomDatasetFromDataFrame(dataset.iloc[test_indices], DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max'],
+                                        tile_min=data_config['min'] )
     train_loader = torch.utils.data.DataLoader(
-            train_set, 
+            train_dataset, 
             batch_size=model_config['batch_size'], 
             shuffle=True,
             num_workers=8,
             pin_memory=True
         )
     val_loader = torch.utils.data.DataLoader(
-            test_set,
+            test_dataset,
             batch_size=model_config['batch_size'],
             shuffle=True,
             num_workers=8,
@@ -97,7 +104,7 @@ def full_training(model, model_config, data_config, r2, device, results):
         ckpt_path=model_config['checkpoint_path']+"_full"+".pth",
         r2=r2
     )
-    with open( model_config['result_path'], "wb" ) as f:
+    with open( model_config['result_path']+"_full.pkl", "wb" ) as f:
         pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
     return
 
@@ -148,7 +155,7 @@ def main( network_config_filename:str,
         data_config = pickle.load(f)
     # BUILD MODEL
     base_model = torchvision.models.resnet18(weights='ResNet18_Weights.DEFAULT')
-    ms_branch = build_from_config( base_model=base_model, config_file=model_config )
+    ms_branch = build_from_config( base_model=base_model, config=model_config )
     if model_config["dual"] == True:
         nl_branch = tl.update_single_layer(torchvision.models.resnet18())
         model = DoubleBranchCNN(b1=ms_branch, b2=nl_branch, output_features=1)
@@ -157,17 +164,17 @@ def main( network_config_filename:str,
     # TRAIN / VAL
     if cross_val=="True" or cross_val=="1":
         results = cross_val_training(model, model_config, data_config, r2, device, results)
-    else: 
-        results = full_training(model, model_config, data_config, r2, device, results)
+    elif cross_val=="0": 
+        results = fourfold_training(model, model_config, data_config, r2, device, results)
     return results
 
 
 if __name__ == "__main__":
-    net_config_filename, data_config_filename, network_type = parse_arguments()
+    net_config_filename, data_config_filename, cross_val = parse_arguments()
     main(
         net_config_filename, 
         data_config_filename, 
-        network_type, 
+        cross_val, 
         )
 
 
