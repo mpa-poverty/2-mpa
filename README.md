@@ -7,9 +7,9 @@
 ##### Virtual Env 
 - Necessite une installation de `python3.10` 
 - Dans le repertoire 2-mpa :  
-```pip install virtualenv```
-```virtualenv venv```
-```source venv/bin/activate```
+```pip install virtualenv```  
+```virtualenv venv```  
+```source venv/bin/activate```  
 ```pip install -r requirements.txt```
 ##### Notes sur le preprocessing / earth-engine
 - Dans le fichier `preprocessing/ee_utils.py`, lignes 298-303 :  
