@@ -87,3 +87,9 @@ def make_config_picklefile(
         pickle.dump(config_file, f, protocol=pickle.HIGHEST_PROTOCOL)
     return config_file
 
+def standardize_countryname(countryname:str)->str:
+    if countryname=='cote_d_ivoire':
+        return "Côte d'Ivoire"
+    if countryname=='democratic_republic_of_congo':
+        return 'Democratic Republic of the Congo'
+    return countryname.replace('_', ' ').title()
