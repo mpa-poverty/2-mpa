@@ -2,7 +2,7 @@
 
 ### UPDATES
 ##### Clusters & dataset w/ clusters
-- clusters a telecharger : `data/dhsnl_folds.pkl`
+- clusters a telecharger : `data/dhs_incountry_folds.pkl`
 - dataset avec clusters assignes : `data/dataset_with_clusters.csv`
 ##### Virtual Env 
 - Necessite une installation de `python3.10` 
