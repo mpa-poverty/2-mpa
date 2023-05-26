@@ -63,14 +63,14 @@ def cross_val_training(model, model_config, data_config, r2, device, results):
     return results
 
 
-def fourfold_training(model, model_config, data_config, r2, device, results):
+def full_training(model, model_config, data_config, r2, device, results):
     with open(data_config['fold'], 'rb') as f:
         fold_dict = pickle.load(f)
     # dataset.iloc[fold_dict[fold]['test']]
     dataset = pd.read_csv(data_config['csv'])
     
-    train_indices = np.concatenate((fold_dict['B']['test'],fold_dict['C']['test'],fold_dict['D']['test'],fold_dict['E']['test']))
-    test_indices = fold_dict['A']['test']
+    train_indices = np.concatenate((fold_dict['C']['test'],fold_dict['D']['test'],fold_dict['E']['test']))
+    test_indices = np.concatenate((fold_dict['A']['test'],fold_dict['B']['test']))
     train_dataset = CustomDatasetFromDataFrame(dataset.iloc[train_indices], DATA_DIR, transform=data_config['train_transform'],tile_max=data_config['max'],
                                         tile_min=data_config['min'] )
     test_dataset = CustomDatasetFromDataFrame(dataset.iloc[test_indices], DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max'],
@@ -165,7 +165,7 @@ def main( network_config_filename:str,
     if cross_val=="True" or cross_val=="1":
         results = cross_val_training(model, model_config, data_config, r2, device, results)
     elif cross_val=="0": 
-        results = fourfold_training(model, model_config, data_config, r2, device, results)
+        results = full_training(model, model_config, data_config, r2, device, results)
     return results
 
 

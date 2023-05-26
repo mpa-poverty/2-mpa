@@ -39,11 +39,7 @@ def build_from_config( base_model :torch.nn.Module, config)-> torch.nn.Module:
     return model
 
 
-def build_model(network_config_filename, data_config_filename, device):
-    with open( network_config_filename ) as f:
-            model_config = json.load(f)
-    with open( data_config_filename,'rb') as f:
-        data_config = pickle.load(f)
+def build_model(model_config, device):
     # Test Dataset and Dataloader
     base_model = torchvision.models.resnet18(weights='ResNet18_Weights.DEFAULT')
     ms_branch = build_from_config( base_model=base_model, config=model_config )
