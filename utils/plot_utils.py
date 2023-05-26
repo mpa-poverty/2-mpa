@@ -29,9 +29,9 @@ def split_regplot(
         scatter_kws=None,
         line_kws=None
         ):
-    data[newcol_name]=data.apply(lambda x: labelsup if x.col_to_split>=split_val else labelinf, axis=1)
-    r2_sup = r2_score(data[data.newcol_name==labelsup].wealthpooled, data[data.newcol_name==labelsup].predicted_wealth)
-    r2_inf = r2_score(data[data.frenewcol_nameshness==labelinf].wealthpooled, data[data.newcol_name==labelinf].predicted_wealth)
+    data[newcol_name]=data.apply(lambda x: labelsup if x[col_to_split]>=split_val else labelinf, axis=1)
+    r2_sup = r2_score(data[data[newcol_name]==labelsup].wealthpooled, data[data[newcol_name]==labelsup].predicted_wealth)
+    r2_inf = r2_score(data[data[newcol_name]==labelinf].wealthpooled, data[data[newcol_name]==labelinf].predicted_wealth)
     sns.lmplot(x="wealthpooled", y="predicted_wealth", hue=newcol_name, line_kws=line_kws, scatter_kws=scatter_kws, data=data)
     plt.text(-1.0,2.3, 'R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=sns.color_palette().as_hex()[1])
     plt.text(-1.0,2.0, 'R2 = ' + str(round(r2_inf,4)), fontsize='large', weight='bold', color=sns.color_palette().as_hex()[0])
@@ -66,6 +66,6 @@ def country_plot(
         legend=True, 
         cmap=cmap,
         figsize=(50,50),
-        legend_kwds={'loc': 'lower left', "fontsize":"8"}
+        legend_kwds={'bbox_to_anchor': (1.3, 1), "fontsize":"8"}
         )
     return

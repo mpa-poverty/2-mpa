@@ -75,10 +75,10 @@ def cross_val_training(
 def parse_arguments():
     args = sys.argv
     try:
-        assert len(args)==4
+        assert len(args)==3
     except AssertionError:
         print("Please enter the two config filenames, the network type and the pre_trained flag")
-    return str(args[1]),str(args[2]),str(args[3])
+    return str(args[1]),str(args[2])
 
 
 def main( 
@@ -126,10 +126,11 @@ def main(
     n_epoch = 100
     for config in zip(lr_list, batch_size_list, decay_list):
         lr, batch_size, decay = config
-        print("CURRENT CONFIG: lr={lr}, batch_size={batch_size}, decay={decay}")
+        print("CURRENT CONFIG: lr={}, batch_size={}, decay={}".format(lr, batch_size, decay))
         # BUILD MODEL
         model = build_model(model_config, device)
         results['config'] = config
+        results['cross_val_results'] = dict()
         results['cross_val_results'] = cross_val_training(
             model, 
             batch_size,
@@ -149,11 +150,10 @@ def main(
 
 
 if __name__ == "__main__":
-    net_config_filename, data_config_filename, cross_val = parse_arguments()
+    net_config_filename, data_config_filename = parse_arguments()
     main(
         net_config_filename, 
         data_config_filename, 
-        cross_val, 
     )
 
 

@@ -38,18 +38,19 @@ def main(
           data_config_filename:str,
           dataset:pd.DataFrame
           )->dict:
-    
+    with open( data_config_filename,'rb') as f:
+        data_config = pickle.load(f)
+    with open( network_config_filename,'rb') as f:
+        model_config = json.load(f)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Load Model
-    model = build_model(data_config_filename=data_config_filename,
-                        network_config_filename=network_config_filename,
+    model = build_model(model_config=model_config,
                         device=device)
     with open( network_config_filename ) as f:
             model_config = json.load(f)
     model.load_state_dict(torch.load(model_config['checkpoint_path']+"_full"+".pth"))
     # Dataset & Loader
-    with open( data_config_filename,'rb') as f:
-        data_config = pickle.load(f)
+    
     with open( data_config['fold'], 'rb') as f:
          fold_dict = pickle.load(f)
     dataset = dataset.iloc[fold_dict['A']['test']]
