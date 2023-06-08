@@ -13,7 +13,7 @@ import numpy as np
 import scipy.spatial
 import sklearn.cluster
 
-from utils.geo_plot import plot_locs  # ignore: E402
+from utils.plot_utils import plot_locs  # ignore: E402
 
 
 def create_folds(locs: np.ndarray,

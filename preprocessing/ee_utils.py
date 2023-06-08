@@ -1,5 +1,5 @@
 from typing import Any, Mapping, Optional, Tuple, Union
-
+from datetime import datetime
 import ee
 import pandas as pd
 import time
@@ -52,10 +52,14 @@ def predictionyear_to_range(survey_year: int) -> Tuple[str, str]:
     '''
     yr_start = survey_year - 1
     yr_end = survey_year + 1
-    
     start_date = str(yr_start)+'-1-1'
     end_date = str(yr_end)+'-12-31'
-    
+
+    # Breaking point between landsat 5 and landsat 8
+    if survey_year == 2012:
+        end_date = "2012-12-31"
+    elif survey_year == 2013:
+        start_date = "2013-03-18"
     return start_date, end_date
 
 def decode_qamask(img: ee.Image) -> ee.Image:
@@ -284,7 +288,7 @@ def wait_on_tasks(tasks: Mapping[Any, ee.batch.Task],
 
 class LandsatSR:
     def __init__(self, filterpoly: ee.Geometry, start_date: str,
-                 end_date: str) -> None:
+                 end_date: str, l7_less=False) -> None:
         '''
         Args
         - filterpoly: ee.Geometry
@@ -294,13 +298,18 @@ class LandsatSR:
         self.filterpoly = filterpoly
         self.start_date = start_date
         self.end_date = end_date
-
+        
+        self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
         self.l8 = self.init_coll('LANDSAT/LC08/C01/T1_SR').map(self.rename_l8).map(self.rescale_l8)
-        # self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-        # self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-        # PICK ONE OF THE OPTIONS BELOW, WETHER TO INCLUDE L7 DATA OR NOT.
-        # self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start')
-        self.merged = self.l8.sort('system:time_start')
+
+        if not l7_less:
+            self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
+            self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start') 
+        else:
+            if int(self.start_date[:4]) >= 2013:
+                self.merged = self.l8.sort('system:time_start')
+            else : 
+                self.merged = self.l5.sort('system:time_start')
 
     def init_coll(self, name: str) -> ee.ImageCollection:
         '''
