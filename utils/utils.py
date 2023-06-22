@@ -3,7 +3,10 @@ import pickle
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+import skimage
+import cv2 as cv
 from shapely.geometry import Point, Polygon
+import matplotlib.pyplot as plt
 # 
 
 def configure_optimizer( config, model ):
@@ -93,3 +96,21 @@ def standardize_countryname(countryname:str)->str:
     if countryname=='democratic_republic_of_congo':
         return 'Democratic Republic of the Congo'
     return countryname.replace('_', ' ').title()
+
+
+def preprocess_viirs_nightlights(viirs_tile):
+    viirs_tile=viirs_tile.numpy()[0,:,:]
+    tile_shape = viirs_tile.shape
+    # Resize to match arc.second-1 pixels
+    v = skimage.transform.resize(viirs_tile, (16,16))
+    # ~ Kernel Density estimation
+    vkd = cv.GaussianBlur(v,(11,11),0)
+    # Match DMSP resolution
+    vkd = skimage.transform.resize(vkd, (8,8))
+    # Log transform
+    log_vkd = np.log(vkd+1)
+    # Sigmoid transform -- values from (Li, 2020)
+    sig_vkd = 6.5 + 57.4 * ( 1 / ( 1 + np.exp( - 1.9 * (log_vkd - 10.8) ) ) )
+    # Return converted raster to its original size
+    dmsp_like = skimage.transform.resize(sig_vkd, tile_shape, preserve_range=True, anti_aliasing=False)
+    return torch.reshape(torch.tensor(dmsp_like), (1, tile_shape[0], tile_shape[1]))

@@ -43,9 +43,14 @@ def build_model(model_config, device):
     # Test Dataset and Dataloader
     base_model = torchvision.models.resnet18(weights='ResNet18_Weights.DEFAULT')
     ms_branch = build_from_config( base_model=base_model, config=model_config )
-    if model_config["dual"] == True:
+    if model_config["branches"] == 2:
         nl_branch = tl.update_single_layer(torchvision.models.resnet18())
         model = DoubleBranchCNN(b1=ms_branch, b2=nl_branch, output_features=1)
+        model = model.to(device=device)
+    elif model_config["branches"] == 3:
+        nl_branch = tl.update_single_layer(torchvision.models.resnet18())
+        # third_branch = None
+        # model = TripleBranchCNN(b1=ms_branch, b2=nl_branch, output_features=1)
     else:
         model = ms_branch.to(device=device)
     return model

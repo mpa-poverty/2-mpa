@@ -1,7 +1,7 @@
 {
 	"transfer": false,
 	"dual":false,
-	
+	"branches":1,
 	"in_channels": 7,
 	"out_features": 1,
 	"weights_init": "average",
@@ -11,11 +11,11 @@
 	"loss": "mse",
 
 	"learning_rate": 1e-3,
-	"weight_decay": 1e-2,
+	"weight_decay": 1e-3,
 	"batch_size":64,
-	"n_epochs":120,
+	"n_epochs":75,
 
-	"checkpoint_path": "models/checkpoints/rn18_ms_e2e_l7_yeh",
+	"checkpoint_path": "models/checkpoints/rn18_ms_e2e_l7_yeh_1_64_0_",
 	"result_path": "models/results/rn18_ms_e2e_l7_yeh"
 }
 

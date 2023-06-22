@@ -31,6 +31,28 @@ def test(model: torch.nn.Module,
     
     return results
     
+def test_r2(model: torch.nn.Module, 
+        dataloader: torch.utils.data.DataLoader,
+        device,
+        ):
+    r2 = torchmetrics.R2Score().to(device=device)
+
+    # Put model in eval mode
+    model.eval() 
+    score=[]
+    # Turn on inference context manager
+    with torch.inference_mode():
+        # Loop through DataLoader batches
+        for _, (X, y) in enumerate(dataloader):
+            # Send data to target device
+            X, y = X.float(), y.float()
+            X, y = X.to(device), y.to(device)
+            y_pred = model(X)
+            # Requires batch_size = 1 in the dataloader
+            score.append(r2(y_pred, y.view(-1,1)))
+    total_score = sum(score)/ len(score)
+    return total_score
+    
 
 def main(
           write_path:str,
@@ -44,29 +66,32 @@ def main(
         model_config = json.load(f)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Load Model
-    model = build_model(model_config=model_config,
-                        device=device)
     with open( network_config_filename ) as f:
             model_config = json.load(f)
-    model.load_state_dict(torch.load(model_config['checkpoint_path']+"_full"+".pth"))
-    # Dataset & Loader
-    
+    load_path = model_config['checkpoint_path']
+
     with open( data_config['fold'], 'rb') as f:
-         fold_dict = pickle.load(f)
-    dataset = dataset.iloc[fold_dict['A']['test']]
-    dataset = dataset.reset_index()
-    test_set = CustomTestDatasetFromDataFrame(dataset, DATA_DIR, transform=data_config['test_transform'],tile_max=data_config['max'],
-                                        tile_min=data_config['min'] )
-    test_loader = torch.utils.data.DataLoader(
-            test_set,
-            batch_size=1,
-        )
-    # Test result per row.index
-    results = test(model, test_loader, device)
-    for idx in results:
-        dataset.at[idx,'predicted_wealth']=results[idx].cpu().numpy()[()]
-    with open( write_path, "wb" ) as f:
-        pickle.dump(dataset, f, protocol=pickle.HIGHEST_PROTOCOL)
-    return dataset
-# if __name__ == "__main__":
-#      main()
+        fold_dict = pickle.load(f)
+
+
+    for fold in ['A','B','C','D','E']:
+        model = build_model(model_config=model_config,
+                    device=device)
+        model.load_state_dict(torch.load(load_path+fold+".pth"))
+        dataset_ = dataset.iloc[fold_dict[fold]['test']]
+        dataset_ = dataset_.reset_index()
+        test_set = CustomTestDatasetFromDataFrame(dataset_, DATA_DIR, transform=data_config['test_transform'] )
+        test_loader = torch.utils.data.DataLoader(
+                test_set,
+                batch_size=1,
+            )
+        # Test result per row.index
+        results = test(model, test_loader, device)
+        for idx in results:
+            dataset_.at[idx,'predicted_wealth']=results[idx].cpu().numpy()[()]
+        dataset_.to_csv(write_path, index=False)
+    return dataset_
+
+
+if __name__ == "__main__":
+     main()

@@ -36,7 +36,7 @@ def train_step(model: torch.nn.Module,
 
         # 5. Optimizer step
         optimizer.step()
-        score.append(r2(y_pred, y.view(-1,1)))
+        score.append(r2(y_pred, y.view(-1,1)).detach())
 
     train_loss = train_loss / len(dataloader)
     total_score = sum(score)/len(score)
@@ -88,7 +88,8 @@ def train(model: torch.nn.Module,
           epochs: int,
           device: torch.device,
           ckpt_path: str,
-          r2
+          r2,
+          dual=False
         ) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -121,6 +122,21 @@ def train(model: torch.nn.Module,
                 test_loss: [1.2641, 1.5706],
                 test_acc: [0.3400, 0.2973]} 
     """
+
+    # Case dual
+    if dual:
+        return dual_train(
+            model,
+            train_dataloader,
+            val_dataloader,
+            optimizer,
+            scheduler,
+            loss_fn,
+            epochs,
+            ckpt_path,
+            device,
+            r2)
+
     # Create empty results dictionary
     results = {"train_loss": [],
                "train_r2": [],
@@ -153,9 +169,9 @@ def train(model: torch.nn.Module,
 
         # Update results dictionary
         results["train_loss"].append(train_loss)
-        results["train_r2"].append(train_r2)
+        results["train_r2"].append(train_r2.detach().cpu().numpy())
         results["test_loss"].append(test_loss)
-        results["test_r2"].append(test_r2)
+        results["test_r2"].append(test_r2.detach().cpu().numpy())
     
     ### End new ###
 
@@ -197,7 +213,6 @@ def dual_train_step(model: torch.nn.Module,
         # 5. Optimizer step
         optimizer.step()
         score.append(r2(y_pred, y.view(-1,1)))
-
     train_loss = train_loss / len(dataloader)
     total_score = sum(score)/ len(score)
     return train_loss, total_score
@@ -317,9 +332,9 @@ def dual_train(model: torch.nn.Module,
 
         # Update results dictionary
         results["train_loss"].append(train_loss)
-        results["train_r2"].append(train_r2)
+        results["train_r2"].append(train_r2.detach().cpu().numpy())
         results["test_loss"].append(test_loss)
-        results["test_r2"].append(test_r2)
+        results["test_r2"].append(test_r2.detach().cpu().numpy())
     ### End new ###
     # Return the filled results at the end of the epochs
     return results

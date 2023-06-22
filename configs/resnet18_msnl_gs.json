@@ -1,0 +1,21 @@
+{
+	"transfer": false,
+	"branches":2,
+	"dual": true,
+	"in_channels": 7,
+	"out_features": 1,
+	"weights_init": "average",
+	"scaling": 0.57,
+
+	"optimizer": "Adam",
+	"loss": "mse",
+
+	"lr_list": [1e-3,1e-2],
+	"batch_size_list": [64,128],
+	"decay_list":[0, 0],
+	"n_epochs":100, 	
+
+	"checkpoint_path": "models/checkpoints/rn18_msnl",
+	"result_path": "models/results/rn18_msnl"
+}
+

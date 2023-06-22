@@ -1,7 +1,7 @@
 {
 	"transfer": false,
-	"dual":false,
-	
+	"branches":1,
+	"dual": false,
 	"in_channels": 7,
 	"out_features": 1,
 	"weights_init": "average",
@@ -10,10 +10,10 @@
 	"optimizer": "Adam",
 	"loss": "mse",
 
-	"lr_list": [1e-4,1e-3,1e-2],
-	"batch_size_list": [64,128,256],
-	"decay_list":[1e-2,1e-3],
-	"n_epochs":120,
+	"lr_list": [1e-3,1e-4],
+	"batch_size_list": [64],
+	"decay_list":[1e-3,1e-4],
+	"n_epochs":100,
 
 	"checkpoint_path": "models/checkpoints/rn18_ms_e2e_l7_yeh",
 	"result_path": "models/results/rn18_ms_e2e_l7_yeh"
