@@ -1,0 +1,125 @@
+import torch
+import pandas as pd
+import json
+import pickle
+import torchmetrics
+from models.build_models import build_model
+from utils import utils 
+
+DATA_DIR = 'data/landsat_7'
+
+
+def test(model: torch.nn.Module, 
+        dataloader: torch.utils.data.DataLoader,
+        device,
+        model_type
+        ):
+    
+    results = dict()
+    # Put model in eval mode
+    model.eval() 
+    # Turn on inference context manager
+    with torch.inference_mode():
+        # Loop through DataLoader batches
+        if model_type=='msnl':
+            for _, (idx, x1, x2, y) in enumerate(dataloader):
+                # Send data to target device
+                x1, x2, y = x1.float(), x2.float(), y.float()
+                x1, x2, y = x1.to(device), x2.to(device), y.to(device)
+                y_pred = model(x1, x2)
+                # Requires batch_size = 1 in the dataloader
+                results[idx] = y_pred
+        else:
+            for _, (idx, X, y) in enumerate(dataloader):
+                # Send data to target device
+                X, y = X.float(), y.float()
+                X, y = X.to(device), y.to(device)
+                y_pred = model(X)
+                # Requires batch_size = 1 in the dataloader
+                results[idx] = y_pred
+    
+    return results
+    
+def test_r2(model: torch.nn.Module, 
+        dataloader: torch.utils.data.DataLoader,
+        device,
+        model_type
+        ):
+    r2 = torchmetrics.R2Score().to(device=device)
+
+    # Put model in eval mode
+    model.eval() 
+    score=[]
+    # Turn on inference context manager
+    with torch.inference_mode():
+        if model_type=="msnl":
+            # Loop through DataLoader batches
+            for batch, (x1, x2, y) in enumerate(dataloader):        
+                # Send data to target device
+                x1, x2, y = x1.float(), x2.float(), y.float()
+                x1, x2, y =  x1.to(device), x2.to(device), y.to(device)
+                y_pred = model(x1,x2)
+                # Requires batch_size = 1 in the dataloader
+                score.append(r2(y_pred, y.view(-1,1)))
+        else:
+            # Loop through DataLoader batches
+            for _, (X, y) in enumerate(dataloader):
+                # Send data to target device
+                X, y = X.float(), y.float()
+                X, y = X.to(device), y.to(device)
+                y_pred = model(X)
+                # Requires batch_size = 1 in the dataloader
+                score.append(r2(y_pred, y.view(-1,1)))
+        total_score = sum(score)/ len(score)
+    return total_score
+    
+
+def main(
+          write_path:str,
+          network_config_filename:str, 
+          data_config_filename:str,
+          dataset:pd.DataFrame,
+          model_type:str,
+          )->dict:
+    
+    with open( data_config_filename,'rb') as f:
+        data_config = pickle.load(f)
+    with open( network_config_filename,'rb') as f:
+        model_config = json.load(f)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Load Model
+    with open( network_config_filename ) as f:
+            model_config = json.load(f)
+    load_path = model_config['checkpoint_path']
+
+    with open( data_config['fold'], 'rb') as f:
+        fold_dict = pickle.load(f)
+
+
+    for fold in ['A','B','C','D','E']:
+        model = build_model(model_config=model_config,
+                    device=device)
+        model.load_state_dict(torch.load(load_path+fold+".pth"))
+        test_set = utils.testset_from_model_type(
+            model_type=model_type,
+            data=dataset,
+            data_dir=DATA_DIR,
+            fold=fold,
+            data_config=data_config,
+            fold_dict=fold_dict
+        )      
+        test_loader = torch.utils.data.DataLoader(
+                test_set,
+                batch_size=1,
+            )
+        # Test result per row.index
+        results = test(model, test_loader, device, model_type=model_type)
+       
+        for idx in results:
+            dataset.at[idx,'predicted_wealth']=results[idx].cpu().numpy()[()]
+        dataset.to_csv(write_path, index=False)
+    return dataset
+
+
+if __name__ == "__main__":
+     main()

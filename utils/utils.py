@@ -6,7 +6,7 @@ import geopandas as gpd
 import skimage
 import cv2 as cv
 from shapely.geometry import Point, Polygon
-import matplotlib.pyplot as plt
+from data_handlers import dataset_classes
 # 
 
 def configure_optimizer( config, model ):
@@ -91,10 +91,12 @@ def make_config_picklefile(
     return config_file
 
 def standardize_countryname(countryname:str)->str:
-    if countryname=='cote_d_ivoire':
+    if countryname in ['cote_d_ivoire',"Côte d'Ivoire","Côte D'Ivoire"]:
         return "Côte d'Ivoire"
-    if countryname=='democratic_republic_of_congo':
+    if countryname in ['democratic_republic_of_congo','Democratic Republic of the Congo','Democratic Republic Of The Congo'] :
         return 'Democratic Republic of the Congo'
+    if countryname in ['tanzania','Tanzania','United Republic Of Tanzania','United Republic of Tanzania']:
+        return 'United Republic of Tanzania'
     return countryname.replace('_', ' ').title()
 
 
@@ -114,3 +116,107 @@ def preprocess_viirs_nightlights(viirs_tile):
     # Return converted raster to its original size
     dmsp_like = skimage.transform.resize(sig_vkd, tile_shape, preserve_range=True, anti_aliasing=False)
     return torch.reshape(torch.tensor(dmsp_like), (1, tile_shape[0], tile_shape[1]))
+
+
+def preprocess_raster(raster, mins, maxs, jitter=None):
+    for i in range(raster.shape[0]):
+        raster[i] = (raster[i]-mins[i]) / (maxs[i]-mins[i])
+        # Color Jittering transform
+        tmp_shape = raster[i].shape
+        if jitter:
+            raster[i] = torch.reshape(
+                jitter(raster[i][None,:,:]), 
+                tmp_shape
+            )
+
+
+def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=False):
+    match model_type:
+        case 'ms':
+            return (
+                dataset_classes.MSDataset(
+                    data.iloc[fold_dict[fold]['train']], 
+                    data_dir, 
+                    transform=data_config['train_transform'],
+                    test_flag=test_flag),
+                dataset_classes.MSDataset(
+                    data.iloc[fold_dict[fold]['val']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )    
+        case 'nl':
+            return (
+                dataset_classes.NLDataset(
+                    data.iloc[fold_dict[fold]['train']], 
+                    data_dir, 
+                    transform=data_config['train_transform'],
+                    test_flag=test_flag),
+                dataset_classes.NLDataset(
+                    data.iloc[fold_dict[fold]['val']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )      
+        case 'msnl':
+            return (
+                dataset_classes.MSNLDataset(
+                    data.iloc[fold_dict[fold]['train']], 
+                    data_dir, 
+                    transform=data_config['train_transform'],
+                    test_flag=test_flag),
+                dataset_classes.MSNLDataset(
+                    data.iloc[fold_dict[fold]['val']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )
+        
+    return None
+
+def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=True):
+    match model_type:
+        case 'ms':
+            return (
+                dataset_classes.MSDataset(
+                    data.iloc[fold_dict[fold]['test']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )    
+        case 'nl':
+            return (
+                dataset_classes.NLDataset(
+                    data.iloc[fold_dict[fold]['test']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )      
+        case 'msnl':
+            return (
+                dataset_classes.MSNLDataset(
+                    data.iloc[fold_dict[fold]['test']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )
+        
+    return None
+
+
+def landsat_to_sentinel_tile(tile):
+    result = np.zeros((13, tile.shape[1], tile.shape[2]))
+    result[0,:,:] = tile[0,:,:]
+    result[1,:,:] = tile[1,:,:]
+    result[2,:,:] = tile[2,:,:]
+    result[3,:,:] = tile[3,:,:]
+    result[4,:,:] = tile[3,:,:]
+    result[5,:,:] = tile[4,:,:]
+    result[6,:,:] = tile[4,:,:]
+    result[7,:,:] = tile[4,:,:]
+    result[8,:,:] = tile[4,:,:]
+    result[9,:,:] = tile[4,:,:]
+    result[10,:,:] = tile[4,:,:]
+    result[11,:,:] = tile[5,:,:]
+    result[12,:,:] = tile[6,:,:]
+    return result

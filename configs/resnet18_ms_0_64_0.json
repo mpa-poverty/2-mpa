@@ -10,12 +10,12 @@
 	"optimizer": "Adam",
 	"loss": "mse",
 
-	"lr_list": [1e-3,1e-4],
-	"batch_size_list": [64],
-	"decay_list":[1e-3,1e-4],
+	"lr_list": 1e-3,
+	"batch_size_list": 64,
+	"decay_list":1e-3,
 	"n_epochs":100,
 
-	"checkpoint_path": "models/checkpoints/rn18_ms_e2e_l7_yeh",
-	"result_path": "models/results/rn18_ms_e2e_l7_yeh"
+	"checkpoint_path": "models/checkpoints/rn18_ms_yeh",
+	"result_path": "models/results/rn18_ms_yeh"
 }
 

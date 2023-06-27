@@ -13,14 +13,16 @@ import pandas as pd
 import geopandas as gpd
 from utils import utils
 
-def extract_crossval_results(results:dict, var:str, new_var:str)->dict:
+def extract_crossval_results(results:dict, var:str, new_var:str, to_cpu=False)->dict:
     extracted_results = dict()
     extracted_results[new_var]=[]
     extracted_results['fold']=[]
     extracted_results['epoch']=[]
     cpt_epoch = 0
     for fold in results:
-        extracted_list = [t.cpu().numpy()[()] for t in results[fold][var]]
+        if to_cpu:
+            extracted_list = [t.cpu().numpy()[()] for t in results[fold][var]]
+        else : extracted_list = [t[()] for t in results[fold][var]]
         extracted_fold = [fold for i in range(len(extracted_list))]
         extracted_results[new_var] += extracted_list
         extracted_results['fold'] += extracted_fold
@@ -59,8 +61,11 @@ def country_plot(
         bg_color:str,
         edgecolor:str
 ):
+    # for c in bg_map.ADM0_NAME.unique():
+        # print(c, bg_map[bg_map.ADM0_NAME==c].head())
     data['country'] = data['country'].apply(utils.standardize_countryname)
     data = data.rename({'country':'ADM0_NAME'},axis='columns')
+    print(data[data.ADM0_NAME=='Rwanda'].head())
     # Compute Average R2 per Country
     country_wise = pd.DataFrame()
     country_wise['ADM0_NAME'] = data['ADM0_NAME'].unique()
