@@ -22,6 +22,8 @@ class DoubleBranchCNN( torch.nn.Module ):
         self.nl.fc = torch.nn.Identity()
         self.ms.fc = torch.nn.Identity()
         self.fc = torch.nn.Linear(ms_features+nl_features, output_features)
+        # self.fc = torch.nn.Linear(2, output_features)
+
         
     def forward(self, x1, x2):
         x1= self.ms(x1)

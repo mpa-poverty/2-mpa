@@ -24,7 +24,6 @@ def msnl_train_step(
           param.requires_grad = False
         for param in model.fc.parameters():
           param.requires_grad = True
-        # Send data to target device
         x1, x2, y = x1.float(), x2.float(), y.float()
         x1, x2, y =  x1.to(device), x2.to(device), y.to(device)
         # 1. Forward pass
@@ -86,7 +85,6 @@ def msnl_finetune(
       train_dataloader: torch.utils.data.DataLoader, 
       val_dataloader: torch.utils.data.DataLoader, 
       optimizer: torch.optim.Optimizer,
-      scheduler: torch.optim.lr_scheduler,
       loss_fn: torch.nn.Module,
       epochs: int,
       ckpt_path:str,
@@ -115,9 +113,8 @@ def msnl_finetune(
                                       loss_fn=loss_fn,
                                       device=device,
                                       r2=r2)
-        scheduler.step(test_loss)
-        torch.save(model.state_dict(), ckpt_path)
-
+        torch.save(model.state_dict(), ckpt_path+str(int(epoch+1))+".pth")
+        
         # Print out what's happening
         print(
           f"Epoch: {epoch+1} | "

@@ -1,12 +1,21 @@
-'''
-Utils functions to adapt pre-trained networks' layers and weights.
-'''
+# UTILS/TRANSFER_LEARNING.PY
+#
+# DESCRIPTION: Contains useful functions for transfer learning purposes
+#
+# @MDC, 2023
+
+
+# IMPORTS
 import torch
 import numpy as np
 
-def update_last_layer(model, out_features=1):
+def update_last_layer(model, out_features=1, vit=False):
     '''changes the last fully connected layer to a (_, out_features) fc layer. 
        set out_features to 1 for regression.'''
+    if vit:
+        n_features = model.head.in_features
+        model.head = torch.nn.Linear(n_features, out_features)
+        return model
     n_features = model.fc.in_features
     model.fc = torch.nn.Linear(n_features, out_features)
     return model

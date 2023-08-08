@@ -1,3 +1,11 @@
+# UTILS/UTILS.PY
+#
+# DESCRIPTION: Contains miscellaneous functions
+#
+# @MDC, 2023
+
+
+# IMPORT 
 import torch
 import pickle
 import numpy as np
@@ -7,7 +15,7 @@ import skimage
 import cv2 as cv
 from shapely.geometry import Point, Polygon
 from data_handlers import dataset_classes
-# 
+
 
 def configure_optimizer( config, model ):
     if config['optimizer'] in ("Adam", "adam"):
@@ -26,15 +34,6 @@ def configure_loss( config ):
     else:
         raise KeyError(config['loss'])
     return
-
-# OBSOLETE
-# MAX_VALUE = 2.643941
-# MIN_VALUE = -1.3713919
-# def normalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
-#     return (asset- min_asset) / (max_asset - min_asset)
-
-# def denormalize_asset(asset, min_asset=MIN_VALUE, max_asset=MAX_VALUE):
-#     return asset * (max_asset - min_asset) + min_asset
 
 
 def compute_average_crossval_results(results:dict):
@@ -101,7 +100,7 @@ def standardize_countryname(countryname:str)->str:
 
 
 def preprocess_viirs_nightlights(viirs_tile):
-    viirs_tile=viirs_tile.numpy()[0,:,:]
+    viirs_tile=viirs_tile.numpy()
     tile_shape = viirs_tile.shape
     # Resize to match arc.second-1 pixels
     v = skimage.transform.resize(viirs_tile, (16,16))
@@ -115,7 +114,7 @@ def preprocess_viirs_nightlights(viirs_tile):
     sig_vkd = 6.5 + 57.4 * ( 1 / ( 1 + np.exp( - 1.9 * (log_vkd - 10.8) ) ) )
     # Return converted raster to its original size
     dmsp_like = skimage.transform.resize(sig_vkd, tile_shape, preserve_range=True, anti_aliasing=False)
-    return torch.reshape(torch.tensor(dmsp_like), (1, tile_shape[0], tile_shape[1]))
+    return torch.reshape(torch.tensor(dmsp_like), (tile_shape[0], tile_shape[1]))
 
 
 def preprocess_raster(raster, mins, maxs, jitter=None):
@@ -128,6 +127,7 @@ def preprocess_raster(raster, mins, maxs, jitter=None):
                 jitter(raster[i][None,:,:]), 
                 tmp_shape
             )
+    return raster
 
 
 def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=False):
@@ -170,9 +170,36 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                     data_dir, 
                     transform=data_config['test_transform'],
                     test_flag=test_flag)
-            )
-        
+            )   
+        case 'vit':
+            return (
+                dataset_classes.VITDataset(
+                    data.iloc[fold_dict[fold]['train']], 
+                    data_dir, 
+                    transform=data_config['train_transform'],
+                    test_flag=test_flag),
+                dataset_classes.VITDataset(
+                    data.iloc[fold_dict[fold]['val']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )   
+        case 'lstm':
+
+            return (
+                dataset_classes.LSTMDataset(
+                    data.iloc[fold_dict[fold]['train'][:64]],
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag),
+                dataset_classes.LSTMDataset(
+                    data.iloc[fold_dict[fold]['val'][:64]], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )   
     return None
+
 
 def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=True):
     match model_type:
@@ -200,7 +227,22 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                     transform=data_config['test_transform'],
                     test_flag=test_flag)
             )
-        
+        case 'vit':
+            return (
+                dataset_classes.VITDataset(
+                    data.iloc[fold_dict[fold]['test']], 
+                    data_dir, 
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )
+        case 'lstm':
+            return (
+                dataset_classes.LSTMDataset(
+                    data.iloc[fold_dict[fold]['test']],
+                    data_dir, 
+                    transform=data_config['test_transform'], 
+                    test_flag=test_flag)
+            )
     return None
 
 

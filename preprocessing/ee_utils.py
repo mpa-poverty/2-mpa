@@ -288,7 +288,7 @@ def wait_on_tasks(tasks: Mapping[Any, ee.batch.Task],
 
 class LandsatSR:
     def __init__(self, filterpoly: ee.Geometry, start_date: str,
-                 end_date: str, l7_less=False) -> None:
+                 end_date: str) -> None:
         '''
         Args
         - filterpoly: ee.Geometry
@@ -299,17 +299,18 @@ class LandsatSR:
         self.start_date = start_date
         self.end_date = end_date
         
-        self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
+        # self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
         self.l8 = self.init_coll('LANDSAT/LC08/C01/T1_SR').map(self.rename_l8).map(self.rescale_l8)
+        self.merged = self.l8.sort('system:time_start')
 
-        if not l7_less:
-            self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-            self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start') 
-        else:
-            if int(self.start_date[:4]) >= 2013:
-                self.merged = self.l8.sort('system:time_start')
-            else : 
-                self.merged = self.l5.sort('system:time_start')
+        # if not l7_less:
+        #     self.l7 = self.init_coll('LANDSAT/LE07/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
+        #     self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start') 
+        # else:
+        #     if int(self.start_date[:4]) >= 2013:
+        #         self.merged = self.l8.sort('system:time_start')
+        #     else : 
+        #         self.merged = self.l5.sort('system:time_start')
 
     def init_coll(self, name: str) -> ee.ImageCollection:
         '''

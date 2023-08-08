@@ -6,7 +6,7 @@ import torchmetrics
 from models.build_models import build_model
 from utils import utils 
 
-DATA_DIR = 'data/landsat_7'
+DATA_DIR = 'data/landsat_7_less'
 
 
 def test(model: torch.nn.Module, 
@@ -77,29 +77,45 @@ def test_r2(model: torch.nn.Module,
 def main(
           write_path:str,
           network_config_filename:str, 
+          fold_path:str,
           data_config_filename:str,
           dataset:pd.DataFrame,
           model_type:str,
           )->dict:
     
-    with open( data_config_filename,'rb') as f:
-        data_config = pickle.load(f)
     with open( network_config_filename,'rb') as f:
         model_config = json.load(f)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Load Model
-    with open( network_config_filename ) as f:
-            model_config = json.load(f)
-    load_path = model_config['checkpoint_path']
+    with open( data_config_filename, 'rb') as f:
+            data_config = pickle.load(f)
 
-    with open( data_config['fold'], 'rb') as f:
+    load_path = model_config['checkpoint_path']
+    with open( fold_path, 'rb') as f:
         fold_dict = pickle.load(f)
 
-
     for fold in ['A','B','C','D','E']:
-        model = build_model(model_config=model_config,
-                    device=device)
-        model.load_state_dict(torch.load(load_path+fold+".pth"))
+        if model_type=="ms":
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    ms_ckpt=load_path+fold+".pth", 
+                    nl_ckpt=None, 
+                    model_type=model_type)
+        elif model_type=="nl":
+            print(load_path+fold+".pth")
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    nl_ckpt=load_path+fold+".pth", 
+                    ms_ckpt=None, 
+                    model_type=model_type)
+        elif model_type=="msnl":
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    msnl_ckpt=load_path+fold+".pth", 
+                    nl_ckpt=model_config["nl_ckpt"]+fold+".pth", 
+                    ms_ckpt=model_config["ms_ckpt"]+fold+".pth", 
+                    model_type=model_type)
+        
         test_set = utils.testset_from_model_type(
             model_type=model_type,
             data=dataset,
@@ -111,13 +127,13 @@ def main(
         test_loader = torch.utils.data.DataLoader(
                 test_set,
                 batch_size=1,
+                shuffle=False
             )
         # Test result per row.index
         results = test(model, test_loader, device, model_type=model_type)
-       
         for idx in results:
-            dataset.at[idx,'predicted_wealth']=results[idx].cpu().numpy()[()]
-        dataset.to_csv(write_path, index=False)
+            dataset.at[int(fold_dict[fold]['test'][idx.cpu().numpy()[()][0]]),'predicted_wealth']=results[idx].cpu().numpy()[()][0][0]
+    dataset.to_csv(write_path, index=False)
     return dataset
 
 

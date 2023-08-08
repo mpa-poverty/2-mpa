@@ -1,5 +1,11 @@
-from __future__ import annotations
+# UTILS/PLOT_UTILS.PY
+#
+# DESCRIPTION: Contains useful functions for plotting results, and subfunctions to handle result datasets
+#
+# @MDC, 2023
 
+# IMPORTS
+from __future__ import annotations
 from typing import Any, Iterable, Optional
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -13,7 +19,19 @@ import pandas as pd
 import geopandas as gpd
 from utils import utils
 
-def extract_crossval_results(results:dict, var:str, new_var:str, to_cpu=False)->dict:
+
+def extract_crossval_results(results:dict, var:str, new_var:str, to_cpu=True)->dict:
+    """Formats result dictionary from training for single-variable plotting functions
+
+    Args:
+        results (dict): training results dictionary
+        var (str): variable to extract, default to 'test_r2'
+        new_var (str): variable name in new dictionary
+        to_cpu (bool, optional): Flag to send data back to cpu if it was not done earlier, frees GPU memory. Defaults to True.
+
+    Returns:
+        extracted_results (dict): for a single var, per model, per epoch.
+    """
     extracted_results = dict()
     extracted_results[new_var]=[]
     extracted_results['fold']=[]
@@ -29,6 +47,7 @@ def extract_crossval_results(results:dict, var:str, new_var:str, to_cpu=False)->
         extracted_results['epoch'] += [i-cpt_epoch for i in range(len(extracted_list))]
     return extracted_results
 
+
 def split_regplot(
         data:pd.DataFrame,
         col_to_split:str, 
@@ -36,20 +55,31 @@ def split_regplot(
         split_val:str, 
         labelsup:str,
         labelinf:str,
+        pal,
         scatter_kws=None,
-        line_kws=None
+        line_kws=None,
         ):
+    """Displays a duo of regression plots from a single dataset, splitting each one given a single variable threshold value.
+
+    Args:
+        data (pd.DataFrame): test dataset
+        col_to_split (str): threshold variable 
+        newcol_name (str): variable name displayed with plot
+        split_val (str): threshold value
+        labelsup (str): label if above threshold
+        labelinf (str): label if below threshold
+        scatter_kws (_type_, optional): seaborn kwargs. Defaults to None.
+        line_kws (_type_, optional): seaborn kwargs. Defaults to None.
+    """
     data[newcol_name]=data.apply(lambda x: labelsup if x[col_to_split]>=split_val else labelinf, axis=1)
     print(len(data[data[newcol_name]==labelsup]),len(data[data[newcol_name]==labelinf]))
-    r2_sup = r2_score(data[data[newcol_name]==labelsup].wealthpooled, data[data[newcol_name]==labelsup].predicted_wealth)
-    r2_inf = r2_score(data[data[newcol_name]==labelinf].wealthpooled, data[data[newcol_name]==labelinf].predicted_wealth)
-    sns.lmplot(x="wealthpooled", y="predicted_wealth", hue=newcol_name, line_kws=line_kws, scatter_kws=scatter_kws, data=data)
-    
-    # sns.regplot(x="wealthpooled", y="predicted_wealth", data=data[data[newcol_name]==labelsup], scatter_kws={'alpha':0.5,'color':sns.color_palette().as_hex()[1]}, line_kws={'color':'red'})
-    # sns.regplot(x="wealthpooled", y="predicted_wealth", data=data[data[newcol_name]==labelinf], scatter_kws={'alpha':0.5,'color':sns.color_palette().as_hex()[0]}, line_kws={'color':'blue'})
-    
-    plt.text(-1.5,1.5, 'R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=sns.color_palette().as_hex()[1])
-    plt.text(-1.5,1.8, 'R2 = ' + str(round(r2_inf,4)), fontsize='large', weight='bold', color=sns.color_palette().as_hex()[0])
+    r2_sup = r2_score(data[data[newcol_name]==labelsup]["True Wealth"], data[data[newcol_name]==labelsup]["Predicted Wealth"])
+    r2_inf = r2_score(data[data[newcol_name]==labelinf]["True Wealth"], data[data[newcol_name]==labelinf]["Predicted Wealth"])
+    # ax = sns.lmplot(x="True Wealth", y="Predicted Wealth", hue=newcol_name, line_kws=line_kws, color_palette=pal, scatter_kws=scatter_kws, data=data)
+    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelsup],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[4], 's':10}, line_kws={'color':pal.as_hex()[5]})
+    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelinf],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[1], 's':10}, line_kws={'color':pal.as_hex()[0]})
+    plt.text(-1.5,1.8, 'Urban R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=pal.as_hex()[4])
+    plt.text(-1.5,1.6, 'Rural R2 = ' + str(round(r2_inf,4)), fontsize='large', weight='bold', color=pal.as_hex()[1])
     plt.plot()
     return
 
@@ -60,17 +90,23 @@ def country_plot(
         cmap:str,
         bg_color:str,
         edgecolor:str
-):
-    # for c in bg_map.ADM0_NAME.unique():
-        # print(c, bg_map[bg_map.ADM0_NAME==c].head())
+    ):
+    """Maps R2 score per country
+
+    Args:
+        bg_map (gpd.GeoDataFrame): Africa shapefile
+        data (pd.DataFrame): test dataset
+        cmap (str): colormap (matplotlib format)
+        bg_color (str): shapefile background color
+        edgecolor (str): country boundaries color
+    """
     data['country'] = data['country'].apply(utils.standardize_countryname)
     data = data.rename({'country':'ADM0_NAME'},axis='columns')
-    print(data[data.ADM0_NAME=='Rwanda'].head())
     # Compute Average R2 per Country
     country_wise = pd.DataFrame()
     country_wise['ADM0_NAME'] = data['ADM0_NAME'].unique()
     for country in country_wise.ADM0_NAME.unique():
-        r2 = r2_score(data[data.ADM0_NAME==country]['wealthpooled'], data[data.ADM0_NAME==country]['predicted_wealth'])
+        r2 = r2_score(data[data.ADM0_NAME==country]['True Wealth'], data[data.ADM0_NAME==country]['Predicted Wealth'])
         country_wise.loc[country_wise['ADM0_NAME'] == country, ["R2"]] = r2
     base = bg_map.plot(color=bg_color, edgecolor=edgecolor)
     base.set_axis_off()
@@ -84,10 +120,9 @@ def country_plot(
         legend=True, 
         cmap=cmap,
         figsize=(50,50),
-        legend_kwds={'bbox_to_anchor': (1.3, 1), "fontsize":"8"}
+        legend_kwds={'bbox_to_anchor': (0.35, 0.55), "fontsize":"6"}
         )
     return
-
 
 
 def setup_ax(fig: matplotlib.figure.Figure,

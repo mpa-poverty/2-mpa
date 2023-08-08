@@ -27,7 +27,6 @@ def train_step(model: torch.nn.Module,
         # 2. Calculate  and accumulate loss
         loss = loss_fn(y_pred, y.view(-1,1))
         train_loss += loss.item() 
-
         # 3. Optimizer zero grad
         optimizer.zero_grad()
 
@@ -66,6 +65,7 @@ def val_step(model: torch.nn.Module,
           X, y = X.to(device), y.to(device)
           # 1. Forward pass
           y_pred = model(X)
+
           # 2. Calculate and accumulate loss
           loss = loss_fn(y_pred, y.view(-1,1))
           test_loss += loss.item()
@@ -83,8 +83,8 @@ def train(model: torch.nn.Module,
           train_dataloader: torch.utils.data.DataLoader, 
           val_dataloader: torch.utils.data.DataLoader, 
           optimizer: torch.optim.Optimizer,
-          scheduler: torch.optim.lr_scheduler,
           loss_fn: torch.nn.Module,
+          scheduler:torch.optim.lr_scheduler,
           epochs: int,
           device: torch.device,
           ckpt_path: str,
@@ -141,9 +141,8 @@ def train(model: torch.nn.Module,
                                       loss_fn=loss_fn,
                                       device=device,
                                       r2=r2)
-        scheduler.step(test_loss)
-        # Print out what's happening
-        torch.save(model.state_dict(), ckpt_path)
+        scheduler.step()
+        torch.save(model.state_dict(), ckpt_path+str(int(epoch)+1)+".pth")
         print(
           f"Epoch: {epoch+1} | "
           f"train_loss: {train_loss:.4f} | "
@@ -157,7 +156,8 @@ def train(model: torch.nn.Module,
         results["train_r2"].append(train_r2.detach().cpu().numpy())
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2.detach().cpu().numpy())
-    
+        
+    torch.save(model.state_dict(), ckpt_path+str(int(epochs))+".pth")
     ### End new ###
 
     # Return the filled results at the end of the epochs
