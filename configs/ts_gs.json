@@ -2,15 +2,11 @@
 	"num_channels": 4,
 	"output_size": 1,
 
-	"optimizer": "Adam",
-	"loss": "mse",
-
 	"lr": 1e-4,
-	"lr_list": [1e-4],
-	"batch_size_list": [256],
-	"decay_list":[1e-2],
+	"batch_size": 256,
+	"decay":1e-2,
 	"n_epochs":50,
 	
-	"checkpoint_path": "models/checkpoints/fcn_",
-	"result_path": "models/results/fcn_"
+	"checkpoint_path": "models/checkpoints/ts_",
+	"result_path": "models/results/ts_"
 }

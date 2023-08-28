@@ -14,7 +14,7 @@ import geopandas as gpd
 import skimage
 import cv2 as cv
 from shapely.geometry import Point, Polygon
-from data_handlers import dataset_classes
+from datasets import dataset_classes
 
 
 def configure_optimizer( config, model ):
@@ -117,9 +117,9 @@ def preprocess_viirs_nightlights(viirs_tile):
     return torch.reshape(torch.tensor(dmsp_like), (tile_shape[0], tile_shape[1]))
 
 
-def preprocess_raster(raster, mins, maxs, jitter=None):
+def preprocess_landsat(raster, normalizer, jitter=None):
     for i in range(raster.shape[0]):
-        raster[i] = (raster[i]-mins[i]) / (maxs[i]-mins[i])
+        raster[i] = (raster[i]- normalizer[0][i]) / (normalizer[1][i])
         # Color Jittering transform
         tmp_shape = raster[i].shape
         if jitter:

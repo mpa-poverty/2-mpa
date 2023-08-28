@@ -1,23 +1,11 @@
 {
-	"transfer": false,
-
-	"in_channels": 7,
-	"out_features": 1,
-	"weights_init": "average",
-	"scaling": 0.42,
-
-	"optimizer": "Adam",
-	"loss": "mse",
-
-	"lr_list": [1e-4],
-	"batch_size_list": [64],
-	"decay_list":[1e-4],
-	"n_epochs":35, 	
-
+	"lr": 1e-4,
+	"batch_size": 64,
+	"decay":1e-4,
+	"n_epochs":50, 	
 	"ms_ckpt":"models/checkpoints/enhanced/ms_",
 	"nl_ckpt":"models/checkpoints/enhanced/nl_",
-	"msnl_ckpt":"models/checkpoints/enhanced/msnl_best_",
-	"checkpoint_path": "models/checkpoints/enhanced/msnl_best_",
-	"result_path": "models/results/msnl_best_"
+	"checkpoint_path": "models/checkpoints/enhanced/msnl_",
+	"result_path": "models/results/msnl_"
 }
 

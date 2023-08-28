@@ -17,7 +17,7 @@ import itertools
 import torchmetrics
 from models import build_models
 from utils import utils
-from training import train_ms, train_msnl, train_fcn, train_msnlt
+from training import train_ms, train_msnl, train_msnlt, train_ts
 import torchinfo
 # CONSTANTS : DATASET
 # DATA_DIR = 'data/landsat_7/'
@@ -118,8 +118,8 @@ def cross_val_training(
                 device=device,
                 r2=r2
             )
-        elif model_type == 'fcn':
-            results[fold] = train_fcn.train(
+        elif model_type == 'ts':
+            results[fold] = train_ts.train(
                 model=model,
                 train_dataloader=train_loader,
                 val_dataloader=val_loader,
