@@ -1,0 +1,26 @@
+{
+	"num_channels": 4,
+	"output_size": 1,
+	"in_channels": 7,
+	"out_features": 1,
+	"weights_init": "average",
+	"scaling": 0.42,
+
+	"optimizer": "Adam",
+	"loss": "mse",
+
+	"lr_list": [1e-5],
+	"lr": 1e-5,
+	"batch_size_list": [64],
+	"decay_list":[1e-2],
+	"n_epochs":30, 	
+
+	"ms_ckpt":"models/checkpoints/enhanced/vit_ms_",
+	"nl_ckpt":"models/checkpoints/enhanced/nl_",
+	"fcn_ckpt":"models/checkpoints/fcn_",
+	"msnlt_ckp": "models/checkpoints/enhanced/vit_msnlt_",
+
+	"checkpoint_path": "models/checkpoints/enhanced/vit_msnlt_",
+	"result_path": "models/results/vit_msnlt_"
+}
+

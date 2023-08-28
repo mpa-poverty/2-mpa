@@ -184,17 +184,45 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                     transform=data_config['test_transform'],
                     test_flag=test_flag)
             )   
-        case 'lstm':
-
+        case 'fcn':
+            with open('data/additional_data/temperatures.pickle', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            with open('data/additional_data/precipitations.pickle', 'rb') as f:
+                pcp_dict = pickle.load(f)
             return (
-                dataset_classes.LSTMDataset(
-                    data.iloc[fold_dict[fold]['train'][:64]],
+                dataset_classes.FCNDataset(
+                    data.iloc[fold_dict[fold]['train']],
                     data_dir, 
+                    pcp_dict=pcp_dict,
+                    tmp_dict=tmp_dict,
                     transform=data_config['test_transform'],
                     test_flag=test_flag),
-                dataset_classes.LSTMDataset(
-                    data.iloc[fold_dict[fold]['val'][:64]], 
+                dataset_classes.FCNDataset(
+                    data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
+                    pcp_dict=pcp_dict,
+                    tmp_dict=tmp_dict,
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag)
+            )   
+        case "msnlt":
+            with open('data/additional_data/temperatures.pickle', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            with open('data/additional_data/precipitations.pickle', 'rb') as f:
+                pcp_dict = pickle.load(f)
+            return (
+                dataset_classes.MSNLTDataset(
+                    data.iloc[fold_dict[fold]['train']],
+                    data_dir, 
+                    pcp_dict=pcp_dict,
+                    tmp_dict=tmp_dict,
+                    transform=data_config['test_transform'],
+                    test_flag=test_flag),
+                dataset_classes.MSNLTDataset(
+                    data.iloc[fold_dict[fold]['val']], 
+                    data_dir, 
+                    pcp_dict=pcp_dict,
+                    tmp_dict=tmp_dict,
                     transform=data_config['test_transform'],
                     test_flag=test_flag)
             )   
@@ -235,14 +263,34 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                     transform=data_config['test_transform'],
                     test_flag=test_flag)
             )
-        case 'lstm':
+        case 'fcn':
+            with open('data/additional_data/temperatures.pickle', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            with open('data/additional_data/precipitations.pickle', 'rb') as f:
+                pcp_dict = pickle.load(f)
             return (
-                dataset_classes.LSTMDataset(
+                dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['test']],
                     data_dir, 
+                    pcp_dict=pcp_dict,
+                    tmp_dict=tmp_dict,
                     transform=data_config['test_transform'], 
                     test_flag=test_flag)
             )
+        case 'msnlt':
+            with open('data/additional_data/temperatures.pickle', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            with open('data/additional_data/precipitations.pickle', 'rb') as f:
+                pcp_dict = pickle.load(f)
+            return ( 
+                dataset_classes.MSNLTDataset(
+                        data.iloc[fold_dict[fold]['test']], 
+                        data_dir, 
+                        pcp_dict=pcp_dict,
+                        tmp_dict=tmp_dict,
+                        transform=data_config['test_transform'],
+                        test_flag=test_flag)
+            )   
     return None
 
 

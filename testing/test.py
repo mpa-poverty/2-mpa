@@ -29,6 +29,14 @@ def test(model: torch.nn.Module,
                 y_pred = model(x1, x2)
                 # Requires batch_size = 1 in the dataloader
                 results[idx] = y_pred
+        if model_type=='msnlt':
+            for _, (idx, x1, x2,x3, y) in enumerate(dataloader):
+                # Send data to target device
+                x1, x2, x3, y = x1.float(), x2.float(), x3.float(), y.float()
+                x1, x2, x3, y = x1.to(device), x2.to(device), x3.to(device), y.to(device)
+                y_pred = model(x1, x2, x3)
+                # Requires batch_size = 1 in the dataloader
+                results[idx] = y_pred
         else:
             for _, (idx, X, y) in enumerate(dataloader):
                 # Send data to target device
@@ -59,6 +67,15 @@ def test_r2(model: torch.nn.Module,
                 x1, x2, y = x1.float(), x2.float(), y.float()
                 x1, x2, y =  x1.to(device), x2.to(device), y.to(device)
                 y_pred = model(x1,x2)
+                # Requires batch_size = 1 in the dataloader
+                score.append(r2(y_pred, y.view(-1,1)))
+        if model_type=="msnlt":
+            # Loop through DataLoader batches
+            for batch, (x1, x2, x3, y) in enumerate(dataloader):        
+                # Send data to target device
+                x1, x2, x3, y = x1.float(), x2.float(), x3.float(), y.float()
+                x1, x2, x3, y =  x1.to(device), x2.to(device), x3.to(device), y.to(device)
+                y_pred = model(x1,x2,x3)
                 # Requires batch_size = 1 in the dataloader
                 score.append(r2(y_pred, y.view(-1,1)))
         else:
@@ -95,7 +112,7 @@ def main(
         fold_dict = pickle.load(f)
 
     for fold in ['A','B','C','D','E']:
-        if model_type=="ms":
+        if model_type=="ms" or model_type=="vit":
             model = build_model(model_config=model_config,
                     device=device, 
                     ms_ckpt=load_path+fold+".pth", 
@@ -108,12 +125,27 @@ def main(
                     nl_ckpt=load_path+fold+".pth", 
                     ms_ckpt=None, 
                     model_type=model_type)
+        elif model_type=="fcn":
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    model_type=model_type,
+                    fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
+                    ms_ckpt=None,
+                    nl_ckpt=None)
         elif model_type=="msnl":
             model = build_model(model_config=model_config,
                     device=device, 
                     msnl_ckpt=load_path+fold+".pth", 
                     nl_ckpt=model_config["nl_ckpt"]+fold+".pth", 
                     ms_ckpt=model_config["ms_ckpt"]+fold+".pth", 
+                    model_type=model_type)
+        elif model_type=="msnlt":
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    msnlt_ckpt=load_path+fold+".pth", 
+                    nl_ckpt=model_config["nl_ckpt"]+fold+".pth", 
+                    ms_ckpt=model_config["ms_ckpt"]+fold+".pth", 
+                    fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
                     model_type=model_type)
         
         test_set = utils.testset_from_model_type(

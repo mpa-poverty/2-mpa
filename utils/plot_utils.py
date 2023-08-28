@@ -76,9 +76,9 @@ def split_regplot(
     r2_sup = r2_score(data[data[newcol_name]==labelsup]["True Wealth"], data[data[newcol_name]==labelsup]["Predicted Wealth"])
     r2_inf = r2_score(data[data[newcol_name]==labelinf]["True Wealth"], data[data[newcol_name]==labelinf]["Predicted Wealth"])
     # ax = sns.lmplot(x="True Wealth", y="Predicted Wealth", hue=newcol_name, line_kws=line_kws, color_palette=pal, scatter_kws=scatter_kws, data=data)
-    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelsup],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[4], 's':10}, line_kws={'color':pal.as_hex()[5]})
+    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelsup],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[3], 's':10}, line_kws={'color':pal.as_hex()[4]})
     ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelinf],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[1], 's':10}, line_kws={'color':pal.as_hex()[0]})
-    plt.text(-1.5,1.8, 'Urban R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=pal.as_hex()[4])
+    plt.text(-1.5,1.8, 'Urban R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=pal.as_hex()[3])
     plt.text(-1.5,1.6, 'Rural R2 = ' + str(round(r2_inf,4)), fontsize='large', weight='bold', color=pal.as_hex()[1])
     plt.plot()
     return

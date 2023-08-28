@@ -2,9 +2,37 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import time
-
+import glob
 import numpy as np
 import tensorflow as tf
+from osgeo import gdal
+import os
+
+def get_dataset_mean(image_dir, num_channels):
+    mean = np.zeros( (num_channels,) )
+    image_list = glob.glob( os.path.join(image_dir,'*','*.tif') )
+    for tif in image_list:
+        raster = gdal.Open(tif)
+        for band in range( raster.RasterCount ):
+            mean[band]+= np.mean( raster.GetRasterBand(band+1).ReadAsArray() )
+    mean /= len(image_list)
+    return mean
+
+def get_dataset_std(image_dir, num_channels, dataset_mean):
+    var = np.zeros( (num_channels,) )
+    image_list = glob.glob( os.path.join(image_dir,'*','*.tif') )
+    dataset_size = len(image_list)
+    for tif in image_list:
+            raster = gdal.Open(tif)
+            for band in range( raster.RasterCount ):
+                img = raster.GetRasterBand(band+1).ReadAsArray()
+                var[band] = var[band] + ( (img - dataset_mean)**2 / dataset_size )
+
+    std = np.sqrt( np.mean(var) )
+    return std
+
+
+
 
 
 def analyze_tfrecord_batch(iter_init: tf.Operation,

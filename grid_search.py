@@ -17,8 +17,8 @@ import itertools
 import torchmetrics
 from models import build_models
 from utils import utils
-from training import train_ms, train_msnl, train_lstm
-
+from training import train_ms, train_msnl, train_fcn, train_msnlt
+import torchinfo
 # CONSTANTS : DATASET
 # DATA_DIR = 'data/landsat_7/'
 DATA_DIR = 'data/landsat_7_less/'
@@ -65,7 +65,6 @@ def cross_val_training(
         fold_dict = pickle.load(f)
     # dataset = pd.read_csv('data/dataset_viirs_only.csv')
     dataset = pd.read_pickle('data/dataset_precipitation.pkl')
-    print(dataset.head())
 
     for fold in fold_dict:
         if model_type=="msnl":
@@ -73,17 +72,17 @@ def cross_val_training(
             nl_ckpt = model_config["nl_ckpt"]+str(fold)+".pth"
             model = build_models.build_model(model_type, model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt)
             model.load_state_dict(torch.load(model_config["msnl_ckpt"]+str(fold)+".pth"))
-        elif model_type=='lstm':
+        elif model_type=='msnlt':
             ms_ckpt = model_config["ms_ckpt"]+str(fold)+".pth"
             nl_ckpt = model_config["nl_ckpt"]+str(fold)+".pth"
-            msnl = build_models.build_model('msnl', model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt)
-            msnl.load_state_dict(torch.load(model_config["msnl_ckpt"]+str(fold)+".pth"))
-            model = build_models.build_lstm(msnl,device=device)
+            fcn_ckpt = model_config["fcn_ckpt"]+str(fold)+".pth"
+            model = build_models.build_model(model_type, model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt, fcn_ckpt=fcn_ckpt)
         else:
             model = build_models.build_model(model_type, model_config, device, ms_ckpt=None, nl_ckpt=None)
 
+
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=decay)
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer, milestones=[100,200], gamma=0.5, last_epoch=-1 )
+        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer=optimizer, max_lr=model_config['lr']*5, base_lr=model_config['lr'], cycle_momentum=False)
         train_dataset, val_dataset = utils.datasets_from_model_type(
             model_type=model_type,
             data=dataset,
@@ -119,13 +118,25 @@ def cross_val_training(
                 device=device,
                 r2=r2
             )
-        elif model_type == 'lstm':
-            results[fold] = train_lstm.train(
+        elif model_type == 'fcn':
+            results[fold] = train_fcn.train(
                 model=model,
                 train_dataloader=train_loader,
                 val_dataloader=val_loader,
                 optimizer=optimizer,
                 scheduler=scheduler,
+                loss_fn=loss_fn,
+                epochs=epochs,
+                device=device,
+                ckpt_path=save_path+'_'+str(fold)+"_",
+                r2=r2,
+            )
+        elif model_type == 'msnlt':
+            results[fold] = train_msnlt.finetune(
+                model=model,
+                train_dataloader=train_loader,
+                val_dataloader=val_loader,
+                optimizer=optimizer,
                 loss_fn=loss_fn,
                 epochs=epochs,
                 device=device,

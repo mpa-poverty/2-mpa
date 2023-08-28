@@ -1,6 +1,7 @@
 import torchvision
 from models.double_branch_CNN import DoubleBranchCNN
-from models.lstm_regressor import LSTMRegressor
+from models.triple_branch import TripleBranch
+from models.fcn_time_series import FCN
 from utils import transfer_learning as tl
 import torchgeo.models
 import torch
@@ -37,34 +38,47 @@ def build_msnl( ms, nl, device, msnl_ckpt=None ):
     model = DoubleBranchCNN(ms, nl, output_features=1)
     return model.to(device)
 
-def build_vit(device):
+def build_vit(device, ms_ckpt=None):
     model = timm.create_model('vit_base_patch16_224', pretrained=True)
     model = tl.update_last_layer(model=model, out_features=1, vit=True)
+    if ms_ckpt is not None:
+        model.load_state_dict(torch.load(ms_ckpt))
     return model.to(device)
 
-def build_lstm(msnl, device):
-    # input_size = 6  # Concatenated input size: 2 sequences x 3 features per time step
-    input_size = 3
-    hidden_size = 3
-    num_layers = 5
-    model = LSTMRegressor(msnl, input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, output_size=1)
+def build_fcn(device, model_config, ckpt=None):
+    num_channels = model_config['num_channels']
+    output_size = model_config['output_size']
+    model = FCN(num_channels=num_channels,output_size=output_size)
+    if ckpt is not None:
+        model.load_state_dict(torch.load(ckpt))
     return model.to(device)
 
+def build_triple_branch( device, branch_1, branch_2, branch_3, msnlt_ckpt=None, with_vit=False):
+    model = TripleBranch( branch_1=branch_1, branch_2=branch_2, branch_3=branch_3, output_features=1, with_vit=with_vit )
+    if msnlt_ckpt is not None:
+        model.load_state_dict(torch.load(msnlt_ckpt))
+    return model.to(device)
 
-def build_model( model_type, model_config, device, ms_ckpt, nl_ckpt, msnl_ckpt=None ):
+def build_model( model_type, model_config, device, ms_ckpt, nl_ckpt, fcn_ckpt=None, msnl_ckpt=None, msnlt_ckpt=None):
     match model_type:
         case "ms":
             return build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
         case "nl": 
             return build_nl( device=device, nl_ckpt=nl_ckpt)
         case "msnl":
-            ms = build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)#.load_state_dict(torch.load(ms_ckpt))
-            nl = build_nl(device=device, nl_ckpt=nl_ckpt)#.load_state_dict(torch.load(nl_ckpt))
+            ms = build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
+            nl = build_nl(device=device, nl_ckpt=nl_ckpt)
             return build_msnl( msnl_ckpt=msnl_ckpt, ms=ms, nl=nl, device=device )
         case "vit":
-            vit = build_vit(device=device)
+            vit = build_vit(device=device, ms_ckpt=ms_ckpt)
             return vit
-        case "lstm":
-            lstm = build_lstm(device=device)
-            return lstm
+        case "fcn":
+            fcn = build_fcn(device=device,model_config=model_config, ckpt=fcn_ckpt)
+            return fcn
+        case "msnlt":
+            # ms = build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
+            vit = build_vit(device=device, ms_ckpt=ms_ckpt)
+            nl = build_nl(device=device, nl_ckpt=nl_ckpt)
+            fcn = build_fcn(device=device, model_config=model_config, ckpt=fcn_ckpt)
+            return build_triple_branch( device=device, branch_1=vit, branch_2=nl, branch_3=fcn, msnlt_ckpt=msnlt_ckpt, with_vit=True)
     return None
