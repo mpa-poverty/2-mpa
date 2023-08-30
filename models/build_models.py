@@ -7,15 +7,15 @@ import torchgeo.models
 import torch
 import timm
 
-def build_ms( config, device, ms_ckpt=None ):
+def build_ms( device, ms_ckpt=None ):
     """Returns an instance of MS ResNet18"""
     base_model = torchvision.models.resnet18(weights='ResNet18_Weights.DEFAULT')
     model = tl.update_last_layer(
                 tl.update_first_layer(
                     base_model, 
-                    in_channels=config['in_channels'], 
-                    weights_init=config['weights_init'],
-                    scaling=config['scaling']
+                    in_channels=7, 
+                    weights_init='average',
+                    scaling=0.42
                 )
         )
     if ms_ckpt is not None:
@@ -48,7 +48,8 @@ def build_vit(device, ms_ckpt=None):
 def build_ts(device, model_config, ckpt=None):
     num_channels = model_config['num_channels']
     output_size = model_config['output_size']
-    model = FCN(num_channels=num_channels,output_size=output_size)
+    filter_size = model_config['filter_size']
+    model = FCN(num_channels=num_channels,filter_size=filter_size, output_size=output_size)
     if ckpt is not None:
         model.load_state_dict(torch.load(ckpt))
     return model.to(device)
@@ -62,11 +63,11 @@ def build_triple_branch( device, branch_1, branch_2, branch_3, msnlt_ckpt=None, 
 def build_model( model_type, model_config, device, ms_ckpt=None, nl_ckpt=None, ts_ckpt=None, msnl_ckpt=None, msnlt_ckpt=None):
     match model_type:
         case "ms":
-            return build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
+            return build_ms( device=device, ms_ckpt=ms_ckpt)
         case "nl": 
             return build_nl( device=device, nl_ckpt=nl_ckpt)
         case "msnl":
-            ms = build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
+            ms = build_ms( device=device, ms_ckpt=ms_ckpt)
             nl = build_nl(device=device, nl_ckpt=nl_ckpt)
             return build_msnl( msnl_ckpt=msnl_ckpt, ms=ms, nl=nl, device=device )
         case "vit":
@@ -76,9 +77,14 @@ def build_model( model_type, model_config, device, ms_ckpt=None, nl_ckpt=None, t
             ts = build_ts(device=device,model_config=model_config, ckpt=ts_ckpt)
             return ts
         case "msnlt":
-            # ms = build_ms(config=model_config, device=device, ms_ckpt=ms_ckpt)
+            ms = build_ms(device=device, ms_ckpt=ms_ckpt)
+            nl = build_nl(device=device, nl_ckpt=nl_ckpt)
+            ts = build_ts(device=device, model_config=model_config, ckpt=ts_ckpt)
+            return build_triple_branch( device=device, branch_1=ms, branch_2=nl, branch_3=ts, msnlt_ckpt=msnlt_ckpt, with_vit=False)
+        case "vit-msnlt":
             vit = build_vit(device=device, ms_ckpt=ms_ckpt)
             nl = build_nl(device=device, nl_ckpt=nl_ckpt)
             ts = build_ts(device=device, model_config=model_config, ckpt=ts_ckpt)
             return build_triple_branch( device=device, branch_1=vit, branch_2=nl, branch_3=ts, msnlt_ckpt=msnlt_ckpt, with_vit=True)
+
     return None

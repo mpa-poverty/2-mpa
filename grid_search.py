@@ -12,6 +12,7 @@ import json
 import pickle
 import sys
 import pandas as pd
+import numpy as np
 import torch 
 import itertools
 import torchmetrics
@@ -33,7 +34,6 @@ def cross_val_training(
         decay:float,
         save_path:str,
         loss_fn,
-        data_config,
         model_config,
         r2,
         device,
@@ -60,11 +60,10 @@ def cross_val_training(
         results (dict): filled result dictionary
     """
 
-    with open('data/dhs_incountry_folds_viirs_only.pkl', 'rb') as f:
+    with open('data/dhs_incountry_folds_2013+.pkl', 'rb') as f:
     # with open('data/dhs_incountry_folds_all.pkl', 'rb') as f:
         fold_dict = pickle.load(f)
-    # dataset = pd.read_csv('data/dataset_viirs_only.csv')
-    dataset = pd.read_pickle('data/dataset_precipitation.pkl')
+    dataset = pd.read_csv('data/dataset_2013+.csv')
 
     for fold in fold_dict:
         if model_type=="msnl":
@@ -75,8 +74,8 @@ def cross_val_training(
         elif model_type=='msnlt':
             ms_ckpt = model_config["ms_ckpt"]+str(fold)+".pth"
             nl_ckpt = model_config["nl_ckpt"]+str(fold)+".pth"
-            fcn_ckpt = model_config["fcn_ckpt"]+str(fold)+".pth"
-            model = build_models.build_model(model_type, model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt, fcn_ckpt=fcn_ckpt)
+            ts_ckpt = model_config["ts_ckpt"]+str(fold)+".pth"
+            model = build_models.build_model(model_type, model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt, ts_ckpt=ts_ckpt)
         else:
             model = build_models.build_model(model_type, model_config, device, ms_ckpt=None, nl_ckpt=None)
 
@@ -87,7 +86,6 @@ def cross_val_training(
             model_type=model_type,
             data=dataset,
             data_dir=DATA_DIR,
-            data_config=data_config,
             fold=fold,
             fold_dict=fold_dict
         )
@@ -156,6 +154,7 @@ def cross_val_training(
                 ckpt_path=save_path+'_'+str(fold)+"_",
                 r2=r2,
             )
+        print('Best validation epoch: ', np.argmax(results[fold])+1)
     return results
 
     
@@ -167,16 +166,15 @@ def parse_gridsearch_arguments():
     """
     args = sys.argv
     try:
-        assert len(args)==4
+        assert len(args)==3
     except AssertionError:
         print("Please enter the two config filenames, the network type and the pre_trained flag")
-    return str(args[1]),str(args[2]),str(args[3])
+    return str(args[1]),str(args[2])
 
 
 
 def main( 
         model_config_filename:str, 
-        data_config_filename:str,
         model_type:str
         ):
     """Trains 5 models for each configuration specified in the model_config_file
@@ -199,16 +197,13 @@ def main(
     # READING CONFIGS & DATA
     with open( model_config_filename ) as f:
         model_config = json.load(f)
-    with open( data_config_filename,'rb') as f:
-        data_config = pickle.load(f)
 
 
-    lr_list = model_config['lr_list']
-    batch_size_list = model_config['batch_size_list']
-    decay_list = model_config['decay_list']
+    lr = model_config['lr']
+    batch_size = model_config['batch_size']
+    decay = model_config['decay']
     n_epoch = model_config['n_epochs']
-    configs = [lr_list, batch_size_list, decay_list]
-    configs = [[i for i in element if i is not None] for element in list(itertools.zip_longest(*configs))]
+    configs = [[lr, batch_size, decay]]
 
     for i in range(len(configs)):
         lr, batch_size, decay = tuple(configs[i])
@@ -222,7 +217,6 @@ def main(
             lr=lr,
             decay=decay,
             loss_fn=torch.nn.MSELoss(),
-            data_config=data_config,
             model_config=model_config,
             r2=r2,
             device=device,
@@ -234,10 +228,9 @@ def main(
 
 
 if __name__ == "__main__":
-    model_config_filename, data_config_filename, model_type = parse_gridsearch_arguments()
+    model_config_filename, model_type = parse_gridsearch_arguments()
     main(
         model_config_filename, 
-        data_config_filename,
         model_type
     )
 

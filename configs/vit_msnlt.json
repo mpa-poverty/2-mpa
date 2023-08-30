@@ -4,6 +4,9 @@
 	"decay":1e-2,
 	"n_epochs":30, 	
 
+	"num_channels": 6,
+	"output_size": 1,
+
 	"ms_ckpt":"models/checkpoints/enhanced/vit_ms_",
 	"nl_ckpt":"models/checkpoints/enhanced/nl_",
 	"fcn_ckpt":"models/checkpoints/ts_",

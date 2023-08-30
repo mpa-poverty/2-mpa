@@ -118,7 +118,7 @@ def preprocess_viirs_nightlights(viirs_tile):
 
 
 def preprocess_landsat(raster, normalizer, jitter=None):
-    for i in range(raster.shape[0]):
+    for i in range(7):
         raster[i] = (raster[i]- normalizer[0][i]) / (normalizer[1][i])
         # Color Jittering transform
         tmp_shape = raster[i].shape
@@ -126,23 +126,21 @@ def preprocess_landsat(raster, normalizer, jitter=None):
             raster[i] = torch.reshape(
                 jitter(raster[i][None,:,:]), 
                 tmp_shape
-            )
+            )    
     return raster
 
 
-def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=False):
+def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_flag=False):
     match model_type:
         case 'ms':
             return (
                 dataset_classes.MSDataset(
                     data.iloc[fold_dict[fold]['train']], 
                     data_dir, 
-                    transform=data_config['train_transform'],
                     test_flag=test_flag),
                 dataset_classes.MSDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )    
         case 'nl':
@@ -150,12 +148,10 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                 dataset_classes.NLDataset(
                     data.iloc[fold_dict[fold]['train']], 
                     data_dir, 
-                    transform=data_config['train_transform'],
                     test_flag=test_flag),
                 dataset_classes.NLDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )      
         case 'msnl':
@@ -163,12 +159,10 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                 dataset_classes.MSNLDataset(
                     data.iloc[fold_dict[fold]['train']], 
                     data_dir, 
-                    transform=data_config['train_transform'],
                     test_flag=test_flag),
                 dataset_classes.MSNLDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )   
         case 'vit':
@@ -176,33 +170,34 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                 dataset_classes.VITDataset(
                     data.iloc[fold_dict[fold]['train']], 
                     data_dir, 
-                    transform=data_config['train_transform'],
                     test_flag=test_flag),
                 dataset_classes.VITDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )   
-        case 'fcn':
+        case 'ts':
             with open('data/additional_data/temperatures.pickle', 'rb') as f:
                 tmp_dict = pickle.load(f)
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
+            # Add dictionary for time-series
+            with open('data/additional_data/random.pickle', 'rb') as f:
+                rand_dict = pickle.load(f)
             return (
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['train']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    transform=data_config['test_transform'],
+                    rand_dict=rand_dict,
                     test_flag=test_flag),
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    transform=data_config['test_transform'],
+                    rand_dict=rand_dict,
                     test_flag=test_flag)
             )   
         case "msnlt":
@@ -210,33 +205,35 @@ def datasets_from_model_type(model_type, data, data_dir, data_config, fold_dict,
                 tmp_dict = pickle.load(f)
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
+                # Add dictionary for time-series
+            with open('data/additional_data/random.pickle', 'rb') as f:
+                rand_dict = pickle.load(f)
             return (
                 dataset_classes.MSNLTDataset(
                     data.iloc[fold_dict[fold]['train']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    transform=data_config['test_transform'],
+                    rand_dict=rand_dict,
                     test_flag=test_flag),
                 dataset_classes.MSNLTDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    transform=data_config['test_transform'],
+                    rand_dict=rand_dict,
                     test_flag=test_flag)
             )   
     return None
 
 
-def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, fold, test_flag=True):
+def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_flag=True):
     match model_type:
         case 'ms':
             return (
                 dataset_classes.MSDataset(
                     data.iloc[fold_dict[fold]['test']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )    
         case 'nl':
@@ -244,7 +241,6 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                 dataset_classes.NLDataset(
                     data.iloc[fold_dict[fold]['test']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )      
         case 'msnl':
@@ -252,7 +248,6 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                 dataset_classes.MSNLDataset(
                     data.iloc[fold_dict[fold]['test']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )
         case 'vit':
@@ -260,7 +255,6 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                 dataset_classes.VITDataset(
                     data.iloc[fold_dict[fold]['test']], 
                     data_dir, 
-                    transform=data_config['test_transform'],
                     test_flag=test_flag)
             )
         case 'fcn':
@@ -268,13 +262,16 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                 tmp_dict = pickle.load(f)
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
+                # Add dictionary for time-series
+            with open('data/additional_data/random.pickle', 'rb') as f:
+                rand_dict = pickle.load(f)
             return (
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['test']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    transform=data_config['test_transform'], 
+                    rand_dict=rand_dict,
                     test_flag=test_flag)
             )
         case 'msnlt':
@@ -282,31 +279,65 @@ def testset_from_model_type(model_type, data, data_dir, data_config, fold_dict, 
                 tmp_dict = pickle.load(f)
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
+                # Add dictionary for time-series
+            with open('data/additional_data/random.pickle', 'rb') as f:
+                rand_dict = pickle.load(f)
             return ( 
                 dataset_classes.MSNLTDataset(
                         data.iloc[fold_dict[fold]['test']], 
                         data_dir, 
                         pcp_dict=pcp_dict,
                         tmp_dict=tmp_dict,
-                        transform=data_config['test_transform'],
+                        rand_dict=rand_dict,
                         test_flag=test_flag)
             )   
     return None
 
 
-def landsat_to_sentinel_tile(tile):
-    result = np.zeros((13, tile.shape[1], tile.shape[2]))
-    result[0,:,:] = tile[0,:,:]
-    result[1,:,:] = tile[1,:,:]
-    result[2,:,:] = tile[2,:,:]
-    result[3,:,:] = tile[3,:,:]
-    result[4,:,:] = tile[3,:,:]
-    result[5,:,:] = tile[4,:,:]
-    result[6,:,:] = tile[4,:,:]
-    result[7,:,:] = tile[4,:,:]
-    result[8,:,:] = tile[4,:,:]
-    result[9,:,:] = tile[4,:,:]
-    result[10,:,:] = tile[4,:,:]
-    result[11,:,:] = tile[5,:,:]
-    result[12,:,:] = tile[6,:,:]
-    return result
+def build_series_from_dict(series_dict, row, series_length, num_series, num_years, normalizer, variable_name, unit='year'):
+    '''
+    Builds a series from a dictionary of monthly or yearly values
+    series_dict:   dictionnary with stored values
+    row:           observation from dataset
+    series_length: number of values per series
+    num_series:    number of series from variable
+    num_years:     number of years taken in total
+    normalizer:    dict with mean and std of variables' values over the dataset to normalize the series
+    variable_name  key to get the mean and std in the normalizer dict
+    unit:          'year' if yearly values, 'monthly' if monthly values in series
+    '''
+    # create empty series with proper dimensions
+    monthly_series = np.zeros((series_length, num_series))
+    yearly_mean_series = np.zeros((series_length, num_series))
+    yearly_min_series = np.zeros((series_length, num_series))
+    yearly_max_series = np.zeros((series_length, num_series))
+    yearly_std_series = np.zeros((series_length, num_series))
+    for year in range(row.year-num_years+1, row.year+1):
+        # We recover yearly lists from dict
+        start_index = year - (row.year-4)
+        if unit=='month':
+            # we fill the series with the 12 values for the current year
+            monthly_series[0*(start_index+1):12*(start_index+1)] = np.array(series_dict[ (row.country, row.year, year, int(row.cluster)) ])
+        else:
+            
+            yearly_series = np.array(series_dict[ (row.country, row.year, year, int(row.cluster)) ])
+            yearly_mean_series[start_index] = np.mean(yearly_series)
+            yearly_min_series[start_index] = np.min(yearly_series)
+            yearly_max_series[start_index] = np.max(yearly_series)
+            # yearly_std_series[start_index] = np.std(yearly_series)
+
+    # we normalize using the dict normalizer[variable_name] mean and std
+    if unit=='month':
+        monthly_series = (monthly_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
+        return monthly_series
+    else:
+        if variable_name=='precipitation':
+            yearly_mean_series = (yearly_mean_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+            yearly_min_series = (yearly_min_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+            yearly_max_series = (yearly_max_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+            return yearly_mean_series, yearly_min_series, yearly_max_series, yearly_std_series
+            
+        yearly_mean_series = (yearly_mean_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
+        yearly_min_series = (yearly_min_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
+        yearly_max_series = (yearly_max_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
+        return yearly_mean_series, yearly_min_series, yearly_max_series, yearly_std_series

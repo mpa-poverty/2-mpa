@@ -1,12 +1,13 @@
 {
-	"num_channels": 4,
+	"num_channels": 9,
 	"output_size": 1,
+	"filter_size": 2,
 
 	"lr": 1e-4,
 	"batch_size": 256,
 	"decay":1e-2,
-	"n_epochs":50,
+	"n_epochs":1,
 	
 	"checkpoint_path": "models/checkpoints/ts_",
-	"result_path": "models/results/ts_"
+	"result_path": "models/results/ts_test"
 }

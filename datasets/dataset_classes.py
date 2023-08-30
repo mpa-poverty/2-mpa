@@ -9,8 +9,10 @@ import torchvision
 from utils import utils
 import rasterio
 import matplotlib.pyplot as plt
+from utils import utils
+import pickle
 
-NORMALIZER = 'normalizer.pkl'
+NORMALIZER = 'datasets/normalizer.pkl'
 BANDS            = ['BLUE','GREEN','RED','NIR','SWIR1','SWIR2','TEMP1','NIGHTLIGHTS']
 DESCRIPTOR       = {
                 'cluster':"float",
@@ -41,7 +43,8 @@ class MSDataset(Dataset):
         """
         self.dataframe = dataframe
         self.root_dir = root_dir
-        self.normalizer = normalizer
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
         self.test_flag = test_flag
 
     def __len__(self):
@@ -68,8 +71,8 @@ class MSDataset(Dataset):
         tile = tile[:7,:,:]  
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
-            torchvision.transforms.RandomHorizontalFlip(size=224),
-            torchvision.transforms.RandomVerticalFlip(size=224)
+            torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomVerticalFlip()
         )
         tile = transforms(tile)
         # Close Raster (Safety Measure)
@@ -95,7 +98,8 @@ class NLDataset(Dataset):
         self.dataframe = dataframe
         self.root_dir = root_dir
         self.test_flag = test_flag
-        self.normalizer= normalizer
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
 
     def __len__(self):
         return len(self.dataframe)
@@ -123,8 +127,8 @@ class NLDataset(Dataset):
         
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
-            torchvision.transforms.RandomHorizontalFlip(size=224),
-            torchvision.transforms.RandomVerticalFlip(size=224)
+            torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomVerticalFlip()
         )
         nl_tile = transforms(nl_tile)
         nl_tile = (nl_tile-self.normalizer['landsat_+_nightlights'][0][-1]) / self.normalizer['landsat_+_nightlights'][1][-1]
@@ -149,7 +153,8 @@ class MSNLDataset(Dataset):
         self.dataframe = dataframe
         self.root_dir = root_dir
         self.transform = transform
-        self.normalizer = normalizer
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
         self.test_flag = test_flag
 
     def __len__(self):
@@ -180,8 +185,8 @@ class MSNLDataset(Dataset):
        
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
-            torchvision.transforms.RandomHorizontalFlip(size=224),
-            torchvision.transforms.RandomVerticalFlip(size=224)
+            torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomVerticalFlip()
         )
         nl_tile = transforms(nl_tile)
         nl_tile = (nl_tile-self.normalizer['landsat_+_nightlights'][0][-1]) / self.normalizer['landsat_+_nightlights'][1][-1]
@@ -189,9 +194,9 @@ class MSNLDataset(Dataset):
         # Close Raster (Safety Measure)
         raster = None
         if self.test_flag:
-            ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
+            ms_tile = tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], jitter=None)
             return idx, ms_tile, nl_tile, value
-        ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
+        ms_tile = tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], JITTER)
         return  ms_tile, nl_tile, value
     
 
@@ -209,6 +214,8 @@ class VITDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
         self.test_flag = test_flag
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
 
     def __len__(self):
         return len(self.dataframe)
@@ -252,7 +259,7 @@ class VITDataset(Dataset):
 
 class FCNDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, normalizer, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, conflict_dict=None, normalizer=None, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -265,6 +272,12 @@ class FCNDataset(Dataset):
         self.test_flag = test_flag
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
+        # ADD DICTIONNARY HERE
+        self.rand_dict = rand_dict
+        self.conflict_dict = conflict_dict
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
+
 
     def __len__(self):
         return len(self.dataframe)
@@ -273,42 +286,60 @@ class FCNDataset(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]         
-        sequence_tmp = self.build_tmp_from_dict(row)
-        sequence_pcp = self.build_pcp_from_dict(row)
-        sequence_tmp=torch.from_numpy(sequence_tmp)
-        sequence_pcp=torch.from_numpy(sequence_pcp)
+        row = self.dataframe.iloc[idx]
 
-        sequence = torch.cat((sequence_tmp,sequence_pcp), dim=1)
+        # Use utils.build_series_from_dict to compose series
+        tmp_mean, tmp_min, tmp_max, _ = utils.build_series_from_dict(series_dict=self.tmp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='temperature',
+                                                    unit='year'
+                                                    )
+        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='precipitation',
+                                                    unit='year'
+                                                    )
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='random',
+                                                    unit='year'
+                                                    )
+        tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)
+        pcp_mean, pcp_min, pcp_max = torch.from_numpy(pcp_mean),torch.from_numpy(pcp_min),torch.from_numpy(pcp_max)
+        # change to conflict
+        rand_mean, rand_min, rand_max = torch.from_numpy(rand_mean),torch.from_numpy(rand_min),torch.from_numpy(rand_max)
+
+        sequence = torch.cat((
+            tmp_mean, tmp_min, tmp_max, pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
+            ), dim=1)
         sequence = sequence.swapaxes(0,1)
+       
         value = row.wealthpooled.astype('float')
         if self.test_flag:
             return idx, sequence, value
         return sequence, value
 
 
-    def build_tmp_from_dict(self, row):
-        sequence_tmp=np.zeros((60,3))
-        for year in range(row.year-4, row.year+1):
-            difference = year -(row.year-4)
-            for month in range(12):
-                sequence_tmp[month*(difference+1)] = self.tmp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_tmp = (sequence_tmp-self.normalizer['temperature'][0]) / self.normalizer['temperature'][1]
-        return sequence_tmp
-    
-    def build_pcp_from_dict(self, row):
-        sequence_pcp=np.zeros((60,1))
-        for year in range(row.year-4, row.year+1):
-            difference = year - (row.year-4)
-            for month in range(12):
-                sequence_pcp[month*(difference+1)] = self.pcp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_pcp = [(sequence_pcp[i]-self.normalizer['temperature'][0][i%12]) / self.normalizer['temperature'][1][i%12] for i in range(len(sequence_pcp)) ]
-        return np.array(sequence_pcp)
+
+
+
 
 
 class MSNLTDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, normalizer, with_vit=True, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -316,11 +347,14 @@ class MSNLTDataset(Dataset):
                 on a sample.
         """
         self.dataframe = dataframe
-        self.normalizer = normalizer
         self.root_dir = root_dir
         self.test_flag = test_flag
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
+        # ADD DICTIONNARY HERE
+        self.rand_dict = rand_dict
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
 
     def __len__(self):
         return len(self.dataframe)
@@ -350,8 +384,8 @@ class MSNLTDataset(Dataset):
        
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
-            torchvision.transforms.RandomHorizontalFlip(size=224),
-            torchvision.transforms.RandomVerticalFlip(size=224)
+            torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomVerticalFlip()
         )
         nl_tile = transforms(nl_tile)
         nl_tile = (nl_tile-self.normalizer['landsat_+_nightlights'][0][-1]) / self.normalizer['landsat_+_nightlights'][1][-1]
@@ -360,45 +394,60 @@ class MSNLTDataset(Dataset):
 
         
         # 2. TIME-SERIES
-        sequence_tmp = self.build_tmp_from_dict(row)
-        sequence_pcp = self.build_pcp_from_dict(row)
-        sequence_tmp=torch.from_numpy(sequence_tmp)
-        sequence_pcp=torch.from_numpy(sequence_pcp)
+        # Use utils.build_series_from_dict to compose series
+        tmp_mean, tmp_min, tmp_max,_ = utils.build_series_from_dict(series_dict=self.tmp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='temperature',
+                                                    unit='year'
+                                                    )
+        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='precipitation',
+                                                    unit='year'
+                                                    )
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='random',
+                                                    unit='year'
+                                                    )
+        tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)
+        pcp_mean, pcp_min, pcp_max = torch.from_numpy(pcp_mean),torch.from_numpy(pcp_min),torch.from_numpy(pcp_max)
+        # change to conflict
+        rand_mean, rand_min, rand_max = torch.from_numpy(rand_mean),torch.from_numpy(rand_min),torch.from_numpy(rand_max)
 
-        sequence = torch.cat((sequence_tmp,sequence_pcp), dim=1)
+
+
+        sequence = torch.cat((
+            tmp_mean, tmp_min, tmp_max,pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
+            ), dim=1)
+        
         sequence = sequence.swapaxes(0,1)
-
 
         value = row.wealthpooled.astype('float')
         if self.test_flag:
-            ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
+            ms_tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], jitter=None)
             return idx, ms_tile, nl_tile, sequence, value
-        ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=JITTER)
+        ms_tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], jitter=JITTER)
         return ms_tile, nl_tile, sequence, value
 
 
-    def build_tmp_from_dict(self, row):
-        sequence_tmp=np.zeros((60,3))
-        for year in range(row.year-4, row.year+1):
-            difference = year -(row.year-4)
-            for month in range(12):
-                sequence_tmp[month*(difference+1)] = self.tmp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_tmp = (sequence_tmp-self.normalizer['temperature'][0]) / self.normalizer['temperature'][1]
-        return sequence_tmp
-    
-    def build_pcp_from_dict(self, row):
-        sequence_pcp=np.zeros((60,1))
-        for year in range(row.year-4, row.year+1):
-            difference = year - (row.year-4)
-            for month in range(12):
-                sequence_pcp[month*(difference+1)] = self.pcp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_pcp = [(sequence_pcp[i]-self.normalizer['temperature'][0][i%12]) / self.normalizer['temperature'][1][i%12] for i in range(len(sequence_pcp)) ]
-        return np.array(sequence_pcp)
-    
+  
 
 class VIT_MSNLTDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, normalizer, with_vit=True, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -406,11 +455,14 @@ class VIT_MSNLTDataset(Dataset):
                 on a sample.
         """
         self.dataframe = dataframe
-        self.normalizer = normalizer
+        with open(NORMALIZER,'rb') as f:
+            self.normalizer = pickle.load(f)
         self.root_dir = root_dir
         self.test_flag = test_flag
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
+        # ADD DICTIONNARY HERE
+        self.rand_dict = rand_dict
 
     def __len__(self):
         return len(self.dataframe)
@@ -449,8 +501,8 @@ class VIT_MSNLTDataset(Dataset):
        
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
-            torchvision.transforms.RandomHorizontalFlip(size=224),
-            torchvision.transforms.RandomVerticalFlip(size=224)
+            torchvision.transforms.RandomHorizontalFlip(),
+            torchvision.transforms.RandomVerticalFlip()
         )
         nl_tile = transforms(nl_tile)
         nl_tile = (nl_tile-self.normalizer['landsat_+_nightlights'][0][-1]) / self.normalizer['landsat_+_nightlights'][1][-1]
@@ -459,37 +511,49 @@ class VIT_MSNLTDataset(Dataset):
 
         
         # 2. TIME-SERIES
-        sequence_tmp = self.build_tmp_from_dict(row)
-        sequence_pcp = self.build_pcp_from_dict(row)
-        sequence_tmp=torch.from_numpy(sequence_tmp)
-        sequence_pcp=torch.from_numpy(sequence_pcp)
+        tmp_mean, tmp_min, tmp_max = utils.build_series_from_dict(series_dict=self.tmp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='temperature',
+                                                    unit='year'
+                                                    )
+        pcp_mean, pcp_min, pcp_max = utils.build_series_from_dict(series_dict=self.pcp_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='precipitation',
+                                                    unit='year'
+                                                    )
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+                                                    row=row, 
+                                                    series_length=5, 
+                                                    num_series=1, 
+                                                    num_years=5, 
+                                                    normalizer=self.normalizer,
+                                                    variable_name='random',
+                                                    unit='year'
+                                                    )
+        tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)
+        pcp_mean, pcp_min, pcp_max = torch.from_numpy(pcp_mean),torch.from_numpy(pcp_min),torch.from_numpy(pcp_max)
+        # change to conflict
+        rand_mean, rand_min, rand_max = torch.from_numpy(rand_mean),torch.from_numpy(rand_min),torch.from_numpy(rand_max)
 
-        sequence = torch.cat((sequence_tmp,sequence_pcp), dim=1)
+
+
+        sequence = torch.cat((
+            tmp_mean, tmp_min, tmp_max,pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
+            ), dim=1)
+        
         sequence = sequence.swapaxes(0,1)
-
 
         value = row.wealthpooled.astype('float')
         if self.test_flag:
-            ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
+            ms_tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], jitter=None)
             return idx, ms_tile, nl_tile, sequence, value
-        ms_tile = tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=JITTER)
+        ms_tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], jitter=JITTER)
         return ms_tile, nl_tile, sequence, value
-
-
-    def build_tmp_from_dict(self, row):
-        sequence_tmp=np.zeros((60,3))
-        for year in range(row.year-4, row.year+1):
-            difference = year -(row.year-4)
-            for month in range(12):
-                sequence_tmp[month*(difference+1)] = self.tmp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_tmp = (sequence_tmp-self.normalizer['temperature'][0]) / self.normalizer['temperature'][1]
-        return sequence_tmp
-    
-    def build_pcp_from_dict(self, row):
-        sequence_pcp=np.zeros((60,1))
-        for year in range(row.year-4, row.year+1):
-            difference = year - (row.year-4)
-            for month in range(12):
-                sequence_pcp[month*(difference+1)] = self.pcp_dict[ (row.country, row.year, year, int(row.cluster)) ][month]   
-        sequence_pcp = [(sequence_pcp[i]-self.normalizer['temperature'][0][i%12]) / self.normalizer['temperature'][1][i%12] for i in range(len(sequence_pcp)) ]
-        return np.array(sequence_pcp)

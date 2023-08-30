@@ -71,6 +71,7 @@ def split_regplot(
         scatter_kws (_type_, optional): seaborn kwargs. Defaults to None.
         line_kws (_type_, optional): seaborn kwargs. Defaults to None.
     """
+    plt.figure(figsize=(10,8))
     data[newcol_name]=data.apply(lambda x: labelsup if x[col_to_split]>=split_val else labelinf, axis=1)
     print(len(data[data[newcol_name]==labelsup]),len(data[data[newcol_name]==labelinf]))
     r2_sup = r2_score(data[data[newcol_name]==labelsup]["True Wealth"], data[data[newcol_name]==labelsup]["Predicted Wealth"])
@@ -111,6 +112,7 @@ def country_plot(
     base = bg_map.plot(color=bg_color, edgecolor=edgecolor)
     base.set_axis_off()
     countryplot = bg_map.merge(country_wise, on='ADM0_NAME', how='left')
+    plt.figure(figsize=(8,10))
     countryplot.plot(
         column='R2', 
         scheme="quantiles",

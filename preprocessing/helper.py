@@ -8,31 +8,20 @@ import tensorflow as tf
 from osgeo import gdal
 import os
 
-def get_dataset_mean(image_dir, num_channels):
-    mean = np.zeros( (num_channels,) )
-    image_list = glob.glob( image_dir+'*/*.tif')
-    for tif in image_list:
-        raster = gdal.Open(tif)
-        for band in range( raster.RasterCount ):
-            mean[band]+= np.mean( raster.GetRasterBand(band+1).ReadAsArray() )
-    mean /= len(image_list)
-    return mean
-
-def get_dataset_std(image_dir, num_channels, dataset_mean):
-    var = np.zeros( (num_channels,) )
-    image_list = glob.glob( os.path.join(image_dir+'*/*.tif') )
-    dataset_size = len(image_list)
-    for tif in image_list:
-            raster = gdal.Open(tif)
-            for band in range( raster.RasterCount ):
-                img = raster.GetRasterBand(band+1).ReadAsArray()
-                var[band] = var[band] + np.mean( (img - dataset_mean[band])**2 / dataset_size )
-    
-    for channel in range(num_channels):
-        var[band] = np.sqrt( np.mean(var[band]) )
-    return var
 
 
+
+def get_mean_std_from_dict(series_dict):
+    arr = np.array([])
+    for k in series_dict.keys():
+        if arr==np.array([]):
+            arr = np.array(series_dict[k]).flatten()
+        else:
+            arr = np.concatenate((arr, np.array(series_dict[k]).flatten()))
+    print('min: ',np.min(arr), 'max: ', np.max(arr))
+    mean=np.mean(arr)
+    std=np.std(arr)
+    return mean, std
 
 
 

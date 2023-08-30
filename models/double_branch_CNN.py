@@ -31,4 +31,3 @@ class DoubleBranchCNN( torch.nn.Module ):
         x = torch.cat((x1, x2), dim=1)
         x = self.fc(x)
         return x
-    
