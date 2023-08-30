@@ -29,8 +29,13 @@
 └── utils
 ```
 
-### Script launch
+### SCRIPT LAUNCH
 
 ```python3 ./grid_search.py configs/model_gs.json model_type```
 
 ```python3 ./use_model.py configs/model_gs.json model_type csv_path image_path series_path```
+
+### REQUIREMENTS
+OS: Ubuntu 18.04 LTS  
+PY: Python 3.10  
+GPU: Nvidia Quadro RTX 6000
