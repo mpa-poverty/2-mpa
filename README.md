@@ -28,3 +28,9 @@
 ├── predict.py           # script to predict poverty from new data with trained models
 └── utils
 ```
+
+### Script launch
+
+```python3 ./grid_search.py configs/model_gs.json model_type```
+
+```python3 ./use_model.py configs/model_gs.json model_type csv_path image_path series_path```
