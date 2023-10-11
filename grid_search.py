@@ -1,6 +1,6 @@
 # GRID_SEARCH.PY
 # 
-# USAGE: python3 ./grid_search.py configs/MODEL_CONFIG_GS.JSON  configs/default_config.pkl MODEL_TYPE
+# USAGE: python3 ./grid_search.py configs/MODEL_CONFIG_GS.JSON MODEL_TYPE
 # DESCRIPTION: Trains 5 models for each configuration specified in the json file
 #              (see 'configs' for config files architecture)
 # @MDC, 2023
@@ -81,7 +81,8 @@ def cross_val_training(
 
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=decay)
-        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer=optimizer, max_lr=model_config['lr']*5, base_lr=model_config['lr'], cycle_momentum=False)
+        #scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer=optimizer, max_lr=model_config['lr']*5, base_lr=model_config['lr'], cycle_momentum=False)
+        scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, mode='min', factor=0.1, patience=4, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08, verbose=True)
         train_dataset, val_dataset = utils.datasets_from_model_type(
             model_type=model_type,
             data=dataset,

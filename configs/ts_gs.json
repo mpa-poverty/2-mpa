@@ -3,11 +3,11 @@
 	"output_size": 1,
 	"filter_size": 2,
 
-	"lr": 1e-4,
+	"lr": 1e-6,
 	"batch_size": 256,
-	"decay":1e-2,
-	"n_epochs":1,
+	"decay":1e-3,
+	"n_epochs":60,
 	
-	"checkpoint_path": "models/checkpoints/ts_",
-	"result_path": "models/results/ts_test"
+	"checkpoint_path": "models/checkpoints/conf_t/ts_conf_t3_best/ts_",
+	"result_path": "models/results/conf_t/ts_conf_t2_"
 }

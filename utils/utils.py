@@ -182,22 +182,22 @@ def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_f
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
             # Add dictionary for time-series
-            with open('data/additional_data/random.pickle', 'rb') as f:
-                rand_dict = pickle.load(f)
+            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
+                conf_dict = pickle.load(f)
             return (
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['train']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    rand_dict=rand_dict,
+                    conf_dict=conf_dict,
                     test_flag=test_flag),
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    rand_dict=rand_dict,
+                    conf_dict=conf_dict,
                     test_flag=test_flag)
             )   
         case "msnlt":
@@ -206,22 +206,22 @@ def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_f
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
                 # Add dictionary for time-series
-            with open('data/additional_data/random.pickle', 'rb') as f:
-                rand_dict = pickle.load(f)
+            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
+                conf_dict = pickle.load(f)
             return (
                 dataset_classes.MSNLTDataset(
                     data.iloc[fold_dict[fold]['train']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    rand_dict=rand_dict,
+                    conf_dict=conf_dict,
                     test_flag=test_flag),
                 dataset_classes.MSNLTDataset(
                     data.iloc[fold_dict[fold]['val']], 
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    rand_dict=rand_dict,
+                    conf_dict=conf_dict,
                     test_flag=test_flag)
             )   
     return None
@@ -263,15 +263,15 @@ def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_fl
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
                 # Add dictionary for time-series
-            with open('data/additional_data/random.pickle', 'rb') as f:
-                rand_dict = pickle.load(f)
+            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
+                conf_dict = pickle.load(f)
             return (
                 dataset_classes.FCNDataset(
                     data.iloc[fold_dict[fold]['test']],
                     data_dir, 
                     pcp_dict=pcp_dict,
                     tmp_dict=tmp_dict,
-                    rand_dict=rand_dict,
+                    conf_dict=conf_dict,
                     test_flag=test_flag)
             )
         case 'msnlt':
@@ -280,17 +280,35 @@ def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_fl
             with open('data/additional_data/precipitations.pickle', 'rb') as f:
                 pcp_dict = pickle.load(f)
                 # Add dictionary for time-series
-            with open('data/additional_data/random.pickle', 'rb') as f:
-                rand_dict = pickle.load(f)
+            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
+                conf_dict = pickle.load(f)
             return ( 
                 dataset_classes.MSNLTDataset(
                         data.iloc[fold_dict[fold]['test']], 
                         data_dir, 
                         pcp_dict=pcp_dict,
                         tmp_dict=tmp_dict,
-                        rand_dict=rand_dict,
+                        conf_dict=conf_dict,
                         test_flag=test_flag)
+        
             )   
+        case 'ts':
+            with open('data/additional_data/temperatures.pickle', 'rb') as f:
+                tmp_dict = pickle.load(f)
+            with open('data/additional_data/precipitations.pickle', 'rb') as f:
+                pcp_dict = pickle.load(f)
+                # Add dictionary for time-series
+            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
+                conf_dict = pickle.load(f)
+            return ( 
+                dataset_classes.FCNDataset(
+                        data.iloc[fold_dict[fold]['test']], 
+                        data_dir, 
+                        pcp_dict=pcp_dict,
+                        tmp_dict=tmp_dict,
+                        conf_dict=conf_dict,
+                        test_flag=test_flag)
+            )
     return None
 
 
@@ -331,11 +349,11 @@ def build_series_from_dict(series_dict, row, series_length, num_series, num_year
         monthly_series = (monthly_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
         return monthly_series
     else:
-        if variable_name=='precipitation':
-            yearly_mean_series = (yearly_mean_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
-            yearly_min_series = (yearly_min_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
-            yearly_max_series = (yearly_max_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
-            return yearly_mean_series, yearly_min_series, yearly_max_series, yearly_std_series
+        #if variable_name=='precipitation':
+         #   yearly_mean_series = (yearly_mean_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+          #  yearly_min_series = (yearly_min_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+           # yearly_max_series = (yearly_max_series-normalizer[variable_name][0][0]) / normalizer[variable_name][1][0]
+            #return yearly_mean_series, yearly_min_series, yearly_max_series, yearly_std_series
             
         yearly_mean_series = (yearly_mean_series-normalizer[variable_name][0]) / normalizer[variable_name][1]
         yearly_min_series = (yearly_min_series-normalizer[variable_name][0]) / normalizer[variable_name][1]

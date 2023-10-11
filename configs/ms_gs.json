@@ -3,6 +3,7 @@
 	"batch_size_list": 64,
 	"decay_list":1e-4,
 	"n_epochs":100,
+	
 	"checkpoint_path": "models/checkpoints/enhanced/ms_",
 	"result_path": "models/results/ms_"
 }

@@ -49,16 +49,16 @@ def extract_crossval_results(results:dict, var:str, new_var:str, to_cpu=True)->d
 
 
 def split_regplot(
-        data:pd.DataFrame,
-        col_to_split:str, 
-        newcol_name:str, 
-        split_val:str, 
-        labelsup:str,
-        labelinf:str,
+        data: pd.DataFrame,
+        col_to_split: str,
+        newcol_name: str,
+        split_val: str,
+        labelsup: str,
+        labelinf: str,
         pal,
         scatter_kws=None,
         line_kws=None,
-        ):
+    ):
     """Displays a duo of regression plots from a single dataset, splitting each one given a single variable threshold value.
 
     Args:
@@ -71,18 +71,27 @@ def split_regplot(
         scatter_kws (_type_, optional): seaborn kwargs. Defaults to None.
         line_kws (_type_, optional): seaborn kwargs. Defaults to None.
     """
-    plt.figure(figsize=(10,8))
-    data[newcol_name]=data.apply(lambda x: labelsup if x[col_to_split]>=split_val else labelinf, axis=1)
-    print(len(data[data[newcol_name]==labelsup]),len(data[data[newcol_name]==labelinf]))
-    r2_sup = r2_score(data[data[newcol_name]==labelsup]["True Wealth"], data[data[newcol_name]==labelsup]["Predicted Wealth"])
-    r2_inf = r2_score(data[data[newcol_name]==labelinf]["True Wealth"], data[data[newcol_name]==labelinf]["Predicted Wealth"])
-    # ax = sns.lmplot(x="True Wealth", y="Predicted Wealth", hue=newcol_name, line_kws=line_kws, color_palette=pal, scatter_kws=scatter_kws, data=data)
-    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelsup],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[3], 's':10}, line_kws={'color':pal.as_hex()[4]})
-    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name]==labelinf],x_ci='sd', marker='o', scatter_kws={'alpha':0.5,'color':pal.as_hex()[1], 's':10}, line_kws={'color':pal.as_hex()[0]})
-    plt.text(-1.5,1.8, 'Urban R2 = ' + str(round(r2_sup,4)), fontsize='large', weight='bold', color=pal.as_hex()[3])
-    plt.text(-1.5,1.6, 'Rural R2 = ' + str(round(r2_inf,4)), fontsize='large', weight='bold', color=pal.as_hex()[1])
+    plt.figure(figsize=(10, 8))
+    data[newcol_name] = data.apply(lambda x: labelsup if x[col_to_split] >= split_val else labelinf, axis=1)
+    
+    r2_sup = r2_score(data[data[newcol_name] == labelsup]["True Wealth"], data[data[newcol_name] == labelsup]["Predicted Wealth"])
+    r2_inf = r2_score(data[data[newcol_name] == labelinf]["True Wealth"], data[data[newcol_name] == labelinf]["Predicted Wealth"])
+    
+    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name] == labelsup], x_ci='sd', marker='o', scatter_kws={'alpha': 0.5, 'color': pal.as_hex()[3], 's': 10}, line_kws={'color': pal.as_hex()[4]})
+    ax = sns.regplot(x="True Wealth", y="Predicted Wealth", data=data[data[newcol_name] == labelinf], x_ci='sd', marker='o', scatter_kws={'alpha': 0.5, 'color': pal.as_hex()[1], 's': 10}, line_kws={'color': pal.as_hex()[0]})
+
+    # Adjust the y-coordinate of the labels to avoid overlap
+    max_y = max(data["Predicted Wealth"].max(), data["True Wealth"].max())
+    plt.text(-1.5, max_y - 3.9, 'Urban R2 = ' + str(round(r2_sup, 4)), fontsize='large', weight='bold', color=pal.as_hex()[3])
+    plt.text(-1.5, max_y - 1.1, 'Rural R2 = ' + str(round(r2_inf, 4)), fontsize='large', weight='bold', color=pal.as_hex()[1])
+    
     plt.plot()
+
+    print(f'r2 urban = {r2_sup}')
+    print(f'r2 rural = {r2_inf}')
+
     return
+
 
 
 def country_plot(

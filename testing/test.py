@@ -95,7 +95,7 @@ def main(
           write_path:str,
           network_config_filename:str, 
           fold_path:str,
-          data_config_filename:str,
+          #data_config_filename:str,
           dataset:pd.DataFrame,
           model_type:str,
           )->dict:
@@ -104,14 +104,21 @@ def main(
         model_config = json.load(f)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Load Model
-    with open( data_config_filename, 'rb') as f:
-            data_config = pickle.load(f)
+    #with open( data_config_filename, 'rb') as f:
+            #data_config = pickle.load(f)
 
     load_path = model_config['checkpoint_path']
     with open( fold_path, 'rb') as f:
         fold_dict = pickle.load(f)
 
     for fold in ['A','B','C','D','E']:
+        if model_type=="ts":
+            model = build_model(model_config=model_config,
+                    device=device, 
+                    ts_ckpt=load_path+fold+".pth", 
+                    nl_ckpt=None,
+                    ms_ckpt=None,
+                    model_type=model_type)        
         if model_type=="ms" or model_type=="vit":
             model = build_model(model_config=model_config,
                     device=device, 
@@ -129,7 +136,7 @@ def main(
             model = build_model(model_config=model_config,
                     device=device, 
                     model_type=model_type,
-                    fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
+                    #fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
                     ms_ckpt=None,
                     nl_ckpt=None)
         elif model_type=="msnl":
@@ -145,7 +152,7 @@ def main(
                     msnlt_ckpt=load_path+fold+".pth", 
                     nl_ckpt=model_config["nl_ckpt"]+fold+".pth", 
                     ms_ckpt=model_config["ms_ckpt"]+fold+".pth", 
-                    fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
+                    #fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
                     model_type=model_type)
         
         test_set = utils.testset_from_model_type(
@@ -153,7 +160,7 @@ def main(
             data=dataset,
             data_dir=DATA_DIR,
             fold=fold,
-            data_config=data_config,
+            #data_config=data_config,
             fold_dict=fold_dict
         )      
         test_loader = torch.utils.data.DataLoader(

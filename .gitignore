@@ -1,0 +1,7 @@
+/data/
+/runs/
+/models/checkpoints/
+.DS_Store
+.conda
+.vscode
+

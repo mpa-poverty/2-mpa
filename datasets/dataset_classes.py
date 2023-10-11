@@ -259,7 +259,7 @@ class VITDataset(Dataset):
 
 class FCNDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, conflict_dict=None, normalizer=None, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, conf_dict, conflict_dict=None, normalizer=None, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -273,7 +273,7 @@ class FCNDataset(Dataset):
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
         # ADD DICTIONNARY HERE
-        self.rand_dict = rand_dict
+        self.conf_dict = conf_dict
         self.conflict_dict = conflict_dict
         with open(NORMALIZER,'rb') as f:
             self.normalizer = pickle.load(f)
@@ -307,13 +307,13 @@ class FCNDataset(Dataset):
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
                                                     row=row, 
                                                     series_length=5, 
                                                     num_series=1, 
                                                     num_years=5, 
                                                     normalizer=self.normalizer,
-                                                    variable_name='random',
+                                                    variable_name='conflict',
                                                     unit='year'
                                                     )
         tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)
@@ -339,7 +339,7 @@ class FCNDataset(Dataset):
 
 class MSNLTDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, conf_dict, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -352,7 +352,7 @@ class MSNLTDataset(Dataset):
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
         # ADD DICTIONNARY HERE
-        self.rand_dict = rand_dict
+        self.conf_dict = conf_dict
         with open(NORMALIZER,'rb') as f:
             self.normalizer = pickle.load(f)
 
@@ -413,13 +413,13 @@ class MSNLTDataset(Dataset):
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
                                                     row=row, 
                                                     series_length=5, 
                                                     num_series=1, 
                                                     num_years=5, 
                                                     normalizer=self.normalizer,
-                                                    variable_name='random',
+                                                    variable_name='conflict',
                                                     unit='year'
                                                     )
         tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)
@@ -447,7 +447,7 @@ class MSNLTDataset(Dataset):
 
 class VIT_MSNLTDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, rand_dict, test_flag=False):
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, conf_dict, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -462,7 +462,7 @@ class VIT_MSNLTDataset(Dataset):
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
         # ADD DICTIONNARY HERE
-        self.rand_dict = rand_dict
+        self.conf_dict = conf_dict
 
     def __len__(self):
         return len(self.dataframe)
@@ -529,13 +529,13 @@ class VIT_MSNLTDataset(Dataset):
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.rand_dict, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
                                                     row=row, 
                                                     series_length=5, 
                                                     num_series=1, 
                                                     num_years=5, 
                                                     normalizer=self.normalizer,
-                                                    variable_name='random',
+                                                    variable_name='conflict',
                                                     unit='year'
                                                     )
         tmp_mean, tmp_min, tmp_max = torch.from_numpy(tmp_mean),torch.from_numpy(tmp_min),torch.from_numpy(tmp_max)

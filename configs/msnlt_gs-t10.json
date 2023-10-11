@@ -1,0 +1,20 @@
+{
+	"num_channels": 9,
+	"output_size": 1,
+	"filter_size": 2,
+   
+	"lr": 1e-4,
+	"batch_size": 64,
+	"decay":1e-3,
+	"n_epochs":50, 
+ 
+ 
+	"ms_ckpt":"models/checkpoints/enhanced/ms_",
+	"nl_ckpt":"models/checkpoints/enhanced/nl_",
+	"ts_ckpt":"models/checkpoints/ts_", 
+ 
+ 
+	"checkpoint_path": "models/checkpoints/conf_t/msnlt_conf_t10_best/msnlt_",
+	"result_path": "models/results/conf_t/msnlt_conf_t10"
+ }
+ 
