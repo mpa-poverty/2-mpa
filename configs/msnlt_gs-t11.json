@@ -14,7 +14,7 @@
 	"ts_ckpt":"models/checkpoints/ts_", 
  
  
-	"checkpoint_path": "models/checkpoints/conf_t/all/msnlt_conf_t11",
+	"checkpoint_path": "models/checkpoints/conf_t/msnlt_conf_t11_best/msnlt_",
 	"result_path": "models/results/conf_t/msnlt_conf_t11"
  }
  
