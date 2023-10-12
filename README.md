@@ -1,4 +1,6 @@
 # Improving Poverty Estimation
+This repository includes the code necessary to train and use the 2MPA models. These models are based on the 2-CNN-branches-model developed by [Yeh at. (2020)](https://www.nature.com/articles/s41467-020-16185-w) which aims to predict poverty in African countries, using daylight and nightlight satellite images. Here we build on this model to improve poverty estimation, adding a third FCN branch trained on socio-climatic data.
+
 
 ### CONTENT
 
@@ -24,7 +26,9 @@
 ├── use_model.py         # script to use the model to predict poverty on new clusters (using existing checkpoints)
 └── utils
 ```
+
 ### REQUIREMENTS
+This code was tested on a system with the following specifications:
 OS: Ubuntu 18.04 LTS  
 PY: Python 3.10  
 GPU: Nvidia Quadro RTX 6000
@@ -37,25 +41,26 @@ GPU: Nvidia Quadro RTX 6000
 ```source venv/bin/activate```  
 ```pip install -r requirements.txt```
 
+
 ### SCRIPT LAUNCH
 To launch model training or usage, write the corresponding command in the terminal.  
 
-#### To train a model:
+#### 1. To train a model:
 to train a model (single branch of 2/3-branches fusion):
 
 ```python3 ./grid_search.py configs/model_gs.json model_type```
 
 ###### model type: 
-ms: CNN learning on multi-spectral Landsat images
-vit_ms: ViT learning on multi-spectral Landsat images
-nl: CNN learning on night lights
-ts: FCN learning on additional data (socio-climatic)
-msnl: 2-branches model, ms+nl
-msnlt: 3-branches model, ms+nl+ts
-vit_msnlt: 3-branches model, vit_ms+nl+ts
+- ms: CNN learning on multi-spectral Landsat images
+- vit_ms: ViT learning on multi-spectral Landsat images
+- nl: CNN learning on night lights
+- ts: FCN learning on additional data (socio-climatic)
+- msnl: 2-branches model, ms+nl
+- msnlt: 3-branches model, ms+nl+ts
+- vit_msnlt: 3-branches model, vit_ms+nl+ts
 
 
-#### To use a model:
+#### 2. To use a model:
 To use a model to predict poverty on new clusters (using existing checkpoints):
 
 ```python3 ./use_model.py configs/model_gs.json model_type csv_path image_path series_path```
