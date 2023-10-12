@@ -82,8 +82,8 @@ def split_regplot(
 
     # Adjust the y-coordinate of the labels to avoid overlap
     max_y = max(data["Predicted Wealth"].max(), data["True Wealth"].max())
-    plt.text(-1.5, max_y - 3.9, 'Urban R2 = ' + str(round(r2_sup, 4)), fontsize='large', weight='bold', color=pal.as_hex()[3])
-    plt.text(-1.5, max_y - 1.1, 'Rural R2 = ' + str(round(r2_inf, 4)), fontsize='large', weight='bold', color=pal.as_hex()[1])
+    plt.text(-1.5, max_y - 3.9, 'Urban R2 = ' + str(round(r2_sup, 4)), fontsize='18', weight='bold', color=pal.as_hex()[3])
+    plt.text(-1.5, max_y - 1.1, 'Rural R2 = ' + str(round(r2_inf, 4)), fontsize='18', weight='bold', color=pal.as_hex()[1])
     
     plt.plot()
 
