@@ -33,7 +33,7 @@ JITTER = torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1)
 
 class MSDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, normalizer, test_flag=False):
+    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -43,7 +43,7 @@ class MSDataset(Dataset):
         """
         self.dataframe = dataframe
         self.root_dir = root_dir
-        with open(NORMALIZER,'rb') as f:
+        with open(normalizer,'rb') as f:
             self.normalizer = pickle.load(f)
         self.test_flag = test_flag
 
