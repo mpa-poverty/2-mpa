@@ -87,7 +87,7 @@ class MSDataset(Dataset):
 
 class NLDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, normalizer, transform=None, test_flag=False):
+    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, transform=None, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -98,7 +98,7 @@ class NLDataset(Dataset):
         self.dataframe = dataframe
         self.root_dir = root_dir
         self.test_flag = test_flag
-        with open(NORMALIZER,'rb') as f:
+        with open(normalizer,'rb') as f:
             self.normalizer = pickle.load(f)
 
     def __len__(self):
