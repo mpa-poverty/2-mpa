@@ -1,0 +1,13 @@
+{
+	"num_channels": 9,
+	"output_size": 1,
+	"filter_size": 2,
+
+	"lr": 1e-6,
+	"batch_size": 256,
+	"decay":1e-3,
+	"n_epochs":1,
+
+	"checkpoint_path": "models/checkpoints/conf_t/ts2_best/ts2_",
+	"result_path": "models/results/conf_t/ts2"
+}
