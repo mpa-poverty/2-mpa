@@ -142,7 +142,7 @@ class NLDataset(Dataset):
 
 class MSNLDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, normalizer, test_flag=False, transform=None):
+    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, test_flag=False, transform=None):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
@@ -153,7 +153,7 @@ class MSNLDataset(Dataset):
         self.dataframe = dataframe
         self.root_dir = root_dir
         self.transform = transform
-        with open(NORMALIZER,'rb') as f:
+        with open(normalizer,'rb') as f:
             self.normalizer = pickle.load(f)
         self.test_flag = test_flag
 

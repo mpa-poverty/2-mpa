@@ -70,7 +70,7 @@ def cross_val_training(
             ms_ckpt = model_config["ms_ckpt"]+str(fold)+".pth"
             nl_ckpt = model_config["nl_ckpt"]+str(fold)+".pth"
             model = build_models.build_model(model_type, model_config, device, ms_ckpt=ms_ckpt, nl_ckpt=nl_ckpt)
-            model.load_state_dict(torch.load(model_config["msnl_ckpt"]+str(fold)+".pth"))
+            # model.load_state_dict(torch.load(model_config["msnl_ckpt"]+str(fold)+".pth"))
         elif model_type=='msnlt':
             ms_ckpt = model_config["ms_ckpt"]+str(fold)+".pth"
             nl_ckpt = model_config["nl_ckpt"]+str(fold)+".pth"

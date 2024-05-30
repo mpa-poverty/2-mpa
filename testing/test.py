@@ -29,7 +29,7 @@ def test(model: torch.nn.Module,
                 y_pred = model(x1, x2)
                 # Requires batch_size = 1 in the dataloader
                 results[idx] = y_pred
-        if model_type=='msnlt':
+        elif model_type=='msnlt':
             for _, (idx, x1, x2,x3, y) in enumerate(dataloader):
                 # Send data to target device
                 x1, x2, x3, y = x1.float(), x2.float(), x3.float(), y.float()
@@ -69,7 +69,7 @@ def test_r2(model: torch.nn.Module,
                 y_pred = model(x1,x2)
                 # Requires batch_size = 1 in the dataloader
                 score.append(r2(y_pred, y.view(-1,1)))
-        if model_type=="msnlt":
+        elif model_type=="msnlt":
             # Loop through DataLoader batches
             for batch, (x1, x2, x3, y) in enumerate(dataloader):        
                 # Send data to target device
@@ -99,6 +99,7 @@ def main(
           dataset:pd.DataFrame,
           model_type:str,
           )->dict:
+
     
     with open( network_config_filename,'rb') as f:
         model_config = json.load(f)
