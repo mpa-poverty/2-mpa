@@ -3,40 +3,35 @@
 import torch
 
 
-class TripleBranch( torch.nn.Module ):
-    """Custom Double Branch Network, that takes two separate CNNs
+class TripleBranch(torch.nn.Module):
+    """Custom Triple Branch Network, that takes three separate CNNs
        as inputs and performs a late fusion, combining them 
        at their last fully-connected layer.
 
     Args:
         ms (torch.nn.Module): first branch cnn
         nl (torch.nn.Module): second branch cnn
+        ts (torch.nn.Module): third branch cnn
     """
 
-    def __init__(self, branch_1, branch_2, branch_3, output_features : int, with_vit : bool=False):
+    def __init__(self, ms, nl, ts, output_features: int):
         super(TripleBranch, self).__init__()
-        self.branch_1 = branch_1
-        self.branch_2 = branch_2
-        self.branch_3 = branch_3
+        self.ms = ms
+        self.nl = nl
+        self.ts = ts
 
-        if not with_vit:
-            total_features = branch_1.fc.in_features + branch_2.fc.in_features + branch_3.fc.in_features
-            self.branch_1.fc = torch.nn.Identity()
-        else:
-            total_features = branch_1.head.in_features + branch_2.fc.in_features + branch_3.fc.in_features
-            self.branch_1.head = torch.nn.Identity()
+        total_features = ms.fc.in_features + nl.fc.in_features + ts.fc.in_features
+        self.ms.fc = torch.nn.Identity()
 
-        
-        self.branch_2.fc = torch.nn.Identity()
-        self.branch_3.fc = torch.nn.Identity()
+        self.nl.fc = torch.nn.Identity()
+        self.ts.fc = torch.nn.Identity()
 
-        self.fc = torch.nn.Linear(total_features, 1)
-        
+        self.fc = torch.nn.Linear(total_features, output_features)
+
     def forward(self, x1, x2, x3):
-        x1= 0.9 * self.branch_1(x1)
-        x2= self.branch_2(x2)
-        x3= self.branch_3(x3)
+        x1 = 0.9 * self.ms(x1)
+        x2 = self.nl(x2)
+        x3 = self.ts(x3)
         x = torch.cat((x1, x2, x3), dim=1)
         x = self.fc(x)
         return x
-    
