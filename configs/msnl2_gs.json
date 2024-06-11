@@ -1,8 +1,8 @@
 {
-	"lr": 1e-4,
-	"batch_size": 256,
-	"decay":1e-4,
-	"n_epochs":2,
+	"lr": 1e-5,
+	"batch_size": 64,
+	"decay":1e-3,
+	"n_epochs":50,
 
 	"ms_ckpt":"models/checkpoints/enhanced/ms_",
 	"nl_ckpt":"models/checkpoints/enhanced/nl_",

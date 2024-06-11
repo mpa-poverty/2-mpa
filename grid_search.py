@@ -24,7 +24,7 @@ import torchinfo
 DATA_DIR = 'data/landsat_7_less/'
 DATASET = 'data/dataset_2013+.csv'
 FOLDS = 'data/dhs_incountry_folds_2013+.pkl'
-SCHEDULER = 'ReduceLROnPlateau'  # alternative: CyclicLR
+SCHEDULER = 'ReduceLROnPlateau'  # options: 'ReduceLROnPlateau' or 'CyclicLR'
 
 
 def cross_val_training(
@@ -51,6 +51,7 @@ def cross_val_training(
             decay (float): weight decay during training
             loss_fn (torch.nn): loss function for training, MSE by default.
         save_path (str): root path to save models state_dicts to
+        data_config (_type_): default input data transforms
         model_config (_type_): model config dictionary 
         r2 (torch.nn): R2 torchmetrics 
         device (str): "cuda" if GPU is available else "cpu"
@@ -161,7 +162,7 @@ def cross_val_training(
                 ckpt_path=save_path + '_' + str(fold) + "_",
                 r2=r2,
             )
-        print('Best validation epoch: ', np.argmax(results[fold]) + 1)
+        print('Best validation epoch: ', np.argmax(results[fold]["test_r2"]) + 1)
     return results
 
 
@@ -189,6 +190,7 @@ def main(
 
     Args:
         model_config_filename (str): SE
+        data_config_filename (str): SE, default to 'configs/default_config.pkl MODEL_TYPE'
         model_type (str): possible values in ["ms","nl","msnl"]
     Returns:
         None

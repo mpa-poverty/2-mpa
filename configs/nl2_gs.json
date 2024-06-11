@@ -1,8 +1,8 @@
 {
 	"lr": 1e-4,
-	"batch_size": 256,
-	"decay":1e-5,
-	"n_epochs":1,
+	"batch_size": 64,
+	"decay":1e-3,
+	"n_epochs":30,
 
 	"checkpoint_path": "models/checkpoints/conf_t/nl2_best/nl2_",
 	"result_path": "models/results/nl2_"

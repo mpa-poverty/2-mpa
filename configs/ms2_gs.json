@@ -1,9 +1,9 @@
 {
-	"lr": 1e-4,
-	"batch_size": 256,
+	"lr": 1e-6,
+	"batch_size": 64,
 	"decay":1e-4,
-	"n_epochs":1,
+	"n_epochs":30,
 
-	"checkpoint_path": "models/checkpoints/conf_t/ms2_best/ms2_",
-	"result_path": "models/results/ms2_"
+	"checkpoint_path": "models/checkpoints/training/ms_lr6_",
+	"result_path": "models/results/reproduction/ms_lr6_"
 }
