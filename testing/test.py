@@ -146,6 +146,7 @@ def main(
                                 ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
                                 model_type=model_type)
         elif model_type == "msnlt":
+            print(load_path + fold + ".pth")
             model = build_model(model_config=model_config,
                                 device=device,
                                 msnlt_ckpt=load_path + fold + ".pth",
