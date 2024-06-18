@@ -1,0 +1,13 @@
+{
+	"num_channels": 9,
+	"output_size": 1,
+	"filter_size": 2,
+
+	"lr": 1e-4,
+	"batch_size": 256,
+	"decay":1e-2,
+	"n_epochs":50,
+
+	"checkpoint_path": "models/checkpoints/training/ts_best_specs",
+	"result_path": "models/results/reproduction/ts_best_specs"
+}

@@ -2,8 +2,8 @@
 	"lr": 1e-6,
 	"batch_size": 64,
 	"decay":1e-4,
-	"n_epochs":30,
+	"n_epochs":100,
 
-	"checkpoint_path": "models/checkpoints/training/ms_lr6_",
-	"result_path": "models/results/reproduction/ms_lr6_"
+	"checkpoint_path": "models/checkpoints/reproduction/ms_lr6_100ep_best/ms_",
+	"result_path": "models/results/reproduction/ms_lr6_100ep"
 }

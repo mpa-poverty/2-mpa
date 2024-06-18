@@ -14,6 +14,6 @@
 	"ts_ckpt":"models/checkpoints/ts_",
 
 
-	"checkpoint_path": "models/checkpoints/training/msnlt_conf_t13",
+	"checkpoint_path": "models/checkpoints/reproduction/msnlt_conf_t13_best/msnlt_",
 	"result_path": "models/results/reproduction/msnlt_conf_t13"
  }

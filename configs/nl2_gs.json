@@ -4,6 +4,6 @@
 	"decay":1e-3,
 	"n_epochs":30,
 
-	"checkpoint_path": "models/checkpoints/conf_t/nl2_best/nl2_",
+	"checkpoint_path": "models/checkpoints/reproduction/nl2_best/nl2_",
 	"result_path": "models/results/nl2_"
 }

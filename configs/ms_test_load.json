@@ -1,0 +1,9 @@
+{
+	"lr": 1e-6,
+	"batch_size": 64,
+	"decay":1e-4,
+	"n_epochs":30,
+
+	"checkpoint_path": "models/checkpoints/reproduction/ms_test_load_best/ms_",
+	"result_path": "models/results/reproduction/ms_test_load"
+}

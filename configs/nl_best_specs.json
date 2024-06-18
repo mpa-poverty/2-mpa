@@ -1,0 +1,9 @@
+{
+	"lr": 1e-3,
+	"batch_size": 64,
+	"decay":1e-3,
+	"n_epochs":100,
+
+	"checkpoint_path": "models/checkpoints/reproduction/nl_best_specs_best/nl_",
+	"result_path": "models/results/reproduction/nl_best_specs"
+}

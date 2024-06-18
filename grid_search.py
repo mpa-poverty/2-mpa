@@ -24,7 +24,7 @@ import torchinfo
 DATA_DIR = 'data/landsat_7_less/'
 DATASET = 'data/dataset_2013+.csv'
 FOLDS = 'data/dhs_incountry_folds_2013+.pkl'
-SCHEDULER = 'CyclicLR'  # options: 'ReduceLROnPlateau' or 'CyclicLR'
+SCHEDULER = 'ReduceLROnPlateau'  # options: 'ReduceLROnPlateau' or 'CyclicLR'
 
 
 def cross_val_training(

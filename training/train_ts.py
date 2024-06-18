@@ -153,7 +153,7 @@ def train(model: torch.nn.Module,
                                       loss_fn=loss_fn,
                                       device=device,
                                       r2=r2)
-        scheduler.step(test_loss)
+        scheduler.step()
         torch.save(model.state_dict(), ckpt_path + str(int(epoch) + 1) + ".pth")
         print(
             f"Epoch: {epoch + 1} | "

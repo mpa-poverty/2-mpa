@@ -4,7 +4,7 @@ from collections.abc import Mapping
 import time
 import glob
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf
 from osgeo import gdal
 import os
 

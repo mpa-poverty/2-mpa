@@ -165,7 +165,7 @@ def train(model: torch.nn.Module,
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2.detach().cpu().numpy())
 
-    torch.save(model.state_dict(), ckpt_path + str(int(epochs)) + ".pth")
+    torch.save(model.to("cpu"), ckpt_path + str(int(epochs)) + ".pth")
     ### End new ###
 
     # Return the filled results at the end of the epochs

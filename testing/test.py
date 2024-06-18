@@ -3,13 +3,14 @@ import pandas as pd
 import json
 import pickle
 import torchmetrics
+import numpy as np
 from models.build_models import build_model
 from utils import utils
 
 DATA_DIR = 'data/landsat_7_less'
 
 
-def test(model: torch.nn.Module,
+def  test(model: torch.nn.Module,
          dataloader: torch.utils.data.DataLoader,
          device,
          model_type
@@ -102,6 +103,7 @@ def main(
     with open(network_config_filename, 'rb') as f:
         model_config = json.load(f)
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    device="cpu"
     # Load Model
     #with open( data_config_filename, 'rb') as f:
     #data_config = pickle.load(f)
@@ -111,49 +113,52 @@ def main(
         fold_dict = pickle.load(f)
 
     for fold in ['A', 'B', 'C', 'D', 'E']:
-        if model_type == "ts":
-            model = build_model(model_config=model_config,
-                                device=device,
-                                ts_ckpt=load_path + fold + ".pth",
-                                nl_ckpt=None,
-                                ms_ckpt=None,
-                                model_type=model_type)
-        if model_type == "ms" or model_type == "vit":
-            model = build_model(model_config=model_config,
-                                device=device,
-                                ms_ckpt=load_path + fold + ".pth",
-                                nl_ckpt=None,
-                                model_type=model_type)
-        elif model_type == "nl":
-            print(load_path + fold + ".pth")
-            model = build_model(model_config=model_config,
-                                device=device,
-                                nl_ckpt=load_path + fold + ".pth",
-                                ms_ckpt=None,
-                                model_type=model_type)
-        elif model_type == "fcn":
-            model = build_model(model_config=model_config,
-                                device=device,
-                                model_type=model_type,
-                                #fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
-                                ms_ckpt=None,
-                                nl_ckpt=None)
-        elif model_type == "msnl":
-            model = build_model(model_config=model_config,
-                                device=device,
-                                msnl_ckpt=load_path + fold + ".pth",
-                                nl_ckpt=model_config["nl_ckpt"] + fold + ".pth",
-                                ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
-                                model_type=model_type)
-        elif model_type == "msnlt":
-            print(load_path + fold + ".pth")
-            model = build_model(model_config=model_config,
-                                device=device,
-                                msnlt_ckpt=load_path + fold + ".pth",
-                                nl_ckpt=model_config["nl_ckpt"] + fold + ".pth",
-                                ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
-                                #fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
-                                model_type=model_type)
+        model = torch.load(load_path + fold + ".pth")
+        print(load_path + fold + ".pth")
+        # if model_type == "ts":
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         ts_ckpt=load_path + fold + ".pth",
+        #                         nl_ckpt=None,
+        #                         ms_ckpt=None,
+        #                         model_type=model_type)
+        # if model_type == "ms" or model_type == "vit":
+        #     print(load_path + fold + ".pth")
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         ms_ckpt=load_path + fold + ".pth",
+        #                         nl_ckpt=None,
+        #                         model_type=model_type)
+        # elif model_type == "nl":
+        #     print(load_path + fold + ".pth")
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         nl_ckpt=load_path + fold + ".pth",
+        #                         ms_ckpt=None,
+        #                         model_type=model_type)
+        # elif model_type == "fcn":
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         model_type=model_type,
+        #                         #fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
+        #                         ms_ckpt=None,
+        #                         nl_ckpt=None)
+        # elif model_type == "msnl":
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         msnl_ckpt=load_path + fold + ".pth",
+        #                         nl_ckpt=model_config["nl_ckpt"] + fold + ".pth",
+        #                         ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
+        #                         model_type=model_type)
+        # elif model_type == "msnlt":
+        #     print(load_path + fold + ".pth")
+        #     model = build_model(model_config=model_config,
+        #                         device=device,
+        #                         msnlt_ckpt=load_path + fold + ".pth",
+        #                         nl_ckpt=model_config["nl_ckpt"] + fold + ".pth",
+        #                         ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
+        #                         #fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
+        #                         model_type=model_type)
 
         test_set = utils.testset_from_model_type(
             model_type=model_type,
