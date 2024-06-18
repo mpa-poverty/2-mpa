@@ -150,7 +150,7 @@ def train(model: torch.nn.Module,
                                       device=device,
                                       r2=r2)
         scheduler.step(test_loss)  # add metrics if SCHEDULER=='ReduceLROnPlateau"
-        torch.save(model.state_dict(), ckpt_path + str(int(epoch) + 1) + ".pth")
+        torch.save(model.to("cpu"), ckpt_path + str(int(epochs)) + ".pth")
         print(
             f"Epoch: {epoch + 1} | "
             f"train_loss: {train_loss:.4f} | "
