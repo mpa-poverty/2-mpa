@@ -232,7 +232,7 @@ def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_fl
         case 'ms':
             return (
                 dataset_classes.MSDataset(
-                    data.iloc[fold_dict[fold]['test']], 
+                    data.iloc[fold_dict[fold]['train']],
                     data_dir, 
                     test_flag=test_flag)
             )    

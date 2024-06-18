@@ -176,7 +176,7 @@ def main(
         # Test result per row.index
         results = test(model, test_loader, device, model_type=model_type)
         for idx in results:
-            dataset.at[int(fold_dict[fold]['test'][idx.cpu().numpy()[()][0]]), 'predicted_wealth'] = \
+            dataset.at[int(fold_dict[fold]['train'][idx.cpu().numpy()[()][0]]), 'predicted_wealth'] = \
             results[idx].cpu().numpy()[()][0][0]
     dataset.to_csv(write_path, index=False)
     return dataset
