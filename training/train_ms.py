@@ -136,6 +136,9 @@ def train(model: torch.nn.Module,
                "test_loss": [],
                "test_r2": []
                }
+
+    patience = 10
+    best_loss = float('inf')
     # Loop through training and testing steps for a number of epochs
     for epoch in range(epochs):
         train_loss, train_r2 = train_step(model=model,
@@ -150,7 +153,7 @@ def train(model: torch.nn.Module,
                                       device=device,
                                       r2=r2)
         scheduler.step(test_loss)  # add metrics if SCHEDULER=='ReduceLROnPlateau"
-        torch.save(model.to("cpu"), ckpt_path + str(int(epochs)) + ".pth")
+        torch.save(model, ckpt_path + str(int(epoch + 1)) + ".pth")
         print(
             f"Epoch: {epoch + 1} | "
             f"train_loss: {train_loss:.4f} | "
@@ -165,7 +168,16 @@ def train(model: torch.nn.Module,
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2.detach().cpu().numpy())
 
-    torch.save(model.to("cpu"), ckpt_path + str(int(epochs)) + ".pth")
+        # Early stopping
+        if test_loss < best_loss:
+            best_loss = test_loss
+            patience = 10  # Reset patience counter
+        else:
+            patience -= 1
+            if patience == 0:
+                break
+
+    torch.save(model, ckpt_path + str(int(epochs)) + ".pth")
     ### End new ###
 
     # Return the filled results at the end of the epochs

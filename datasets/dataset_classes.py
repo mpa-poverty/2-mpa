@@ -78,7 +78,7 @@ class MSDataset(Dataset):
         # Close Raster (Safety Measure)
         raster = None
         if self.test_flag:
-            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
+            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
             return idx, tile, value
         tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
         return tile, value
