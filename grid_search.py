@@ -65,7 +65,7 @@ def cross_val_training(
         fold_dict = pickle.load(f)
     dataset = pd.read_csv(DATASET)
 
-    for fold in {k:fold_dict[k] for k in ['C', 'D', 'E']}:
+    for fold in fold_dict:
         if model_type == "msnl":
             ms_ckpt = model_config["ms_ckpt"] + str(fold) + ".pth"
             nl_ckpt = model_config["nl_ckpt"] + str(fold) + ".pth"

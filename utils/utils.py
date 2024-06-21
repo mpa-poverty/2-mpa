@@ -172,17 +172,6 @@ def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_f
                     data_dir,
                     test_flag=test_flag)
             )
-        case 'vit':
-            return (
-                dataset_classes.VITDataset(
-                    data.iloc[fold_dict[fold]['train']],
-                    data_dir,
-                    test_flag=test_flag),
-                dataset_classes.VITDataset(
-                    data.iloc[fold_dict[fold]['val']],
-                    data_dir,
-                    test_flag=test_flag)
-            )
         case 'ts':
             with open('data/additional_data/temperatures.pickle', 'rb') as f:
                 tmp_dict = pickle.load(f)
@@ -255,30 +244,6 @@ def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_fl
                 dataset_classes.MSNLDataset(
                     data.iloc[fold_dict[fold]['test']],
                     data_dir,
-                    test_flag=test_flag)
-            )
-        case 'vit':
-            return (
-                dataset_classes.VITDataset(
-                    data.iloc[fold_dict[fold]['test']],
-                    data_dir,
-                    test_flag=test_flag)
-            )
-        case 'fcn':
-            with open('data/additional_data/temperatures.pickle', 'rb') as f:
-                tmp_dict = pickle.load(f)
-            with open('data/additional_data/precipitations.pickle', 'rb') as f:
-                pcp_dict = pickle.load(f)
-                # Add dictionary for time-series
-            with open('data/additional_data/conflict_noneg.pickle', 'rb') as f:
-                conf_dict = pickle.load(f)
-            return (
-                dataset_classes.FCNDataset(
-                    data.iloc[fold_dict[fold]['test']],
-                    data_dir,
-                    pcp_dict=pcp_dict,
-                    tmp_dict=tmp_dict,
-                    conf_dict=conf_dict,
                     test_flag=test_flag)
             )
         case 'msnlt':
