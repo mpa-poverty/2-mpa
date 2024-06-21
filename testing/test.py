@@ -110,9 +110,8 @@ def main(
         fold_dict = pickle.load(f)
 
     for fold in ['A', 'B', 'C', 'D', 'E']:
-        # model = torch.load(load_path + fold + ".pth")
-        # print(load_path + fold + ".pth")
         if model_type == "ts":
+            print(load_path + fold + ".pth")
             model = build_model(model_config=model_config,
                                 device=device,
                                 ts_ckpt=load_path + fold + ".pth",
@@ -133,14 +132,8 @@ def main(
                                 nl_ckpt=load_path + fold + ".pth",
                                 ms_ckpt=None,
                                 model_type=model_type)
-        elif model_type == "fcn":
-            model = build_model(model_config=model_config,
-                                device=device,
-                                model_type=model_type,
-                                #fcn_ckpt=model_config['checkpoint_path']+str(fold)+".pth",
-                                ms_ckpt=None,
-                                nl_ckpt=None)
         elif model_type == "msnl":
+            print(load_path + fold + ".pth")
             model = build_model(model_config=model_config,
                                 device=device,
                                 msnl_ckpt=load_path + fold + ".pth",
@@ -154,7 +147,7 @@ def main(
                                 msnlt_ckpt=load_path + fold + ".pth",
                                 nl_ckpt=model_config["nl_ckpt"] + fold + ".pth",
                                 ms_ckpt=model_config["ms_ckpt"] + fold + ".pth",
-                                #fcn_ckpt=model_config['fcn_ckpt']+fold+".pth",
+                                ts_ckpt=model_config["ts_ckpt"] + fold + ".pth",
                                 model_type=model_type)
 
         test_set = utils.testset_from_model_type(
@@ -172,7 +165,7 @@ def main(
         # Test result per row.index
         results = test(model, test_loader, device, model_type=model_type)
         for idx in results:
-            dataset.at[int(fold_dict[fold]['train'][idx.cpu().numpy()[()][0]]), 'predicted_wealth'] = \
+            dataset.at[int(fold_dict[fold]['test'][idx.cpu().numpy()[()][0]]), 'predicted_wealth'] = \
                 results[idx].cpu().numpy()[()][0][0]
     dataset.to_csv(write_path, index=False)
     return dataset

@@ -8,6 +8,6 @@
 	"decay":1e-2,
 	"n_epochs":50,
 
-	"checkpoint_path": "models/checkpoints/training/ts_best_specs",
+	"checkpoint_path": "models/checkpoints/reproduction/ts_best_specs_best/ts_",
 	"result_path": "models/results/reproduction/ts_best_specs"
 }

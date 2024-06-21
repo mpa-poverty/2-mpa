@@ -153,7 +153,7 @@ def train(model: torch.nn.Module,
                                       device=device,
                                       r2=r2)
         scheduler.step(test_loss)  # add metrics if SCHEDULER=='ReduceLROnPlateau"
-        torch.save(model, ckpt_path + str(int(epoch + 1)) + ".pth")
+        torch.save(model.state_dict(), ckpt_path + str(int(epoch + 1)) + ".pth")
         print(
             f"Epoch: {epoch + 1} | "
             f"train_loss: {train_loss:.4f} | "
@@ -177,7 +177,7 @@ def train(model: torch.nn.Module,
             if patience == 0:
                 break
 
-    torch.save(model, ckpt_path + str(int(epochs)) + ".pth")
+    torch.save(model.state_dict(), ckpt_path + str(int(epochs)) + ".pth")
     ### End new ###
 
     # Return the filled results at the end of the epochs

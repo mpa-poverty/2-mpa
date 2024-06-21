@@ -16,7 +16,7 @@ NORMALIZER = 'datasets/normalizer.pkl'
 BANDS            = ['BLUE','GREEN','RED','NIR','SWIR1','SWIR2','TEMP1','NIGHTLIGHTS']
 DESCRIPTOR       = {
                 'cluster':"float",
-                'lat':"float", 
+                'lat':"float",
                 "lon":"float",
                 'wealthpooled':"float",
                 'BLUE':"float",
@@ -27,7 +27,7 @@ DESCRIPTOR       = {
                 'SWIR2':"float",
                 'TEMP1':"float",
                 'NIGHTLIGHTS':"float"
-              }   
+              }
 
 JITTER = torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1)
 
@@ -50,39 +50,46 @@ class MSDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]            
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )     
-        
+                                 )
+
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
+        value = row.wealthpooled.astype('float')
         tile= torch.from_numpy(np.nan_to_num(tile))
 
         # We only select MS bands
-        tile = tile[:7,:,:]  
-        transforms=torch.nn.Sequential(
+        tile = tile[:7,:,:]
+        transforms_train=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
             torchvision.transforms.RandomVerticalFlip()
         )
-        tile = transforms(tile)
+
+        transforms_test = torch.nn.Sequential(
+            torchvision.transforms.CenterCrop(224),
+           )
+
         # Close Raster (Safety Measure)
         raster = None
         if self.test_flag:
-            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
+            tile = transforms_test(tile)
+            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
             return idx, tile, value
+
+        tile = transforms_train(tile)
         tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
         return tile, value
-    
+
 
 
 class NLDataset(Dataset):
@@ -104,27 +111,27 @@ class NLDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]     
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )     
-        
+                                 )
+
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
+        value = row.wealthpooled.astype('float')
         tile= torch.from_numpy(np.nan_to_num(tile))
 
-        nl_tile = tile[-1,:,:]  
+        nl_tile = tile[-1,:,:]
 
         # NL PREPROCESSING
-        
+
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -138,7 +145,7 @@ class NLDataset(Dataset):
         if self.test_flag:
             return idx, nl_tile, value
         return nl_tile, value
-    
+
 
 class MSNLDataset(Dataset):
 
@@ -160,29 +167,29 @@ class MSNLDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]            
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )     
-        
+                                 )
+
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
-        tile= torch.from_numpy(np.nan_to_num(tile)) 
+        value = row.wealthpooled.astype('float')
+        tile= torch.from_numpy(np.nan_to_num(tile))
 
         # MS bands
-        ms_tile = tile[:7,:,:]  
-        
+        ms_tile = tile[:7,:,:]
+
         # NL band
-        nl_tile = tile[-1,:,:]  
-       
+        nl_tile = tile[-1,:,:]
+
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -198,7 +205,7 @@ class MSNLDataset(Dataset):
             return idx, ms_tile, nl_tile, value
         ms_tile = tile = utils.preprocess_landsat(ms_tile, self.normalizer['landsat_+_nightlights'], JITTER)
         return  ms_tile, nl_tile, value
-    
+
 
 class VITDataset(Dataset):
 
@@ -220,21 +227,21 @@ class VITDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        row = self.dataframe.iloc[idx]            
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )     
-        
+                                 )
+
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
+        value = row.wealthpooled.astype('float')
 
         transforms=torch.nn.Sequential(
             torchvision.transforms.Resize(256),
@@ -242,7 +249,7 @@ class VITDataset(Dataset):
             torchvision.transforms.RandomVerticalFlip(size=256)
         )
 
-        vit_tile = tile[:3,:,:]  
+        vit_tile = tile[:3,:,:]
         vit_tile = transforms(vit_tile)
         # Close Raster (Safety Measure)
         raster = None
@@ -252,9 +259,9 @@ class VITDataset(Dataset):
         if self.test_flag:
             vit_tile = utils.preprocess_landsat(vit_tile, self.normalizer, jitter=None)
             return idx, vit_tile, value
-        vit_tile = utils.preprocess_landsat(vit_tile, self.normalizer, JITTER)    
+        vit_tile = utils.preprocess_landsat(vit_tile, self.normalizer, JITTER)
         return vit_tile, value
-    
+
 
 
 class FCNDataset(Dataset):
@@ -282,36 +289,36 @@ class FCNDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         row = self.dataframe.iloc[idx]
 
         # Use utils.build_series_from_dict to compose series
-        tmp_mean, tmp_min, tmp_max, _ = utils.build_series_from_dict(series_dict=self.tmp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        tmp_mean, tmp_min, tmp_max, _ = utils.build_series_from_dict(series_dict=self.tmp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='temperature',
                                                     unit='year'
                                                     )
-        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='conflict',
                                                     unit='year'
@@ -325,7 +332,7 @@ class FCNDataset(Dataset):
             tmp_mean, tmp_min, tmp_max, pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
             ), dim=1)
         sequence = sequence.swapaxes(0,1)
-       
+
         value = row.wealthpooled.astype('float')
         if self.test_flag:
             return idx, sequence, value
@@ -359,29 +366,29 @@ class MSNLTDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        row = self.dataframe.iloc[idx] 
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )                
+                                 )
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
-        tile= torch.from_numpy(np.nan_to_num(tile)) 
+        value = row.wealthpooled.astype('float')
+        tile= torch.from_numpy(np.nan_to_num(tile))
 
         # MS bands
-        ms_tile = tile[:7,:,:]  
-        
+        ms_tile = tile[:7,:,:]
+
         # NL band
-        nl_tile = tile[-1,:,:]  
-       
+        nl_tile = tile[-1,:,:]
+
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -392,32 +399,32 @@ class MSNLTDataset(Dataset):
         nl_tile = nl_tile[None,:,:]
         raster=None
 
-        
+
         # 2. TIME-SERIES
         # Use utils.build_series_from_dict to compose series
-        tmp_mean, tmp_min, tmp_max,_ = utils.build_series_from_dict(series_dict=self.tmp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        tmp_mean, tmp_min, tmp_max,_ = utils.build_series_from_dict(series_dict=self.tmp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='temperature',
                                                     unit='year'
                                                     )
-        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        pcp_mean, pcp_min, pcp_max,_ = utils.build_series_from_dict(series_dict=self.pcp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='conflict',
                                                     unit='year'
@@ -432,7 +439,7 @@ class MSNLTDataset(Dataset):
         sequence = torch.cat((
             tmp_mean, tmp_min, tmp_max,pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
             ), dim=1)
-        
+
         sequence = sequence.swapaxes(0,1)
 
         value = row.wealthpooled.astype('float')
@@ -443,7 +450,7 @@ class MSNLTDataset(Dataset):
         return ms_tile, nl_tile, sequence, value
 
 
-  
+
 
 class VIT_MSNLTDataset(Dataset):
 
@@ -467,22 +474,22 @@ class VIT_MSNLTDataset(Dataset):
     def __len__(self):
         return len(self.dataframe)
 
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        row = self.dataframe.iloc[idx] 
+        row = self.dataframe.iloc[idx]
         tile_name = os.path.join(self.root_dir,
                                  str(row.country)+"_"+str(row.year),
                                  str(row.cluster)+".tif"
-                                 )                
+                                 )
         raster = gdal.Open(tile_name)
         tile = np.empty([8,255,255])
         for band in range( raster.RasterCount ):
             tile[band,:,:] = raster.GetRasterBand(band+1).ReadAsArray()
-        value = row.wealthpooled.astype('float')          
-        tile= torch.from_numpy(np.nan_to_num(tile)) 
+        value = row.wealthpooled.astype('float')
+        tile= torch.from_numpy(np.nan_to_num(tile))
 
         # MS bands
         transforms_vit=torch.nn.Sequential(
@@ -491,14 +498,14 @@ class VIT_MSNLTDataset(Dataset):
             torchvision.transforms.RandomVerticalFlip(size=256)
         )
 
-        ms_tile = tile[:3,:,:]  
+        ms_tile = tile[:3,:,:]
         ms_tile = transforms_vit(ms_tile)
         # Close Raster (Safety Measure)
         raster = None
 
         # NL band
-        nl_tile = tile[-1,:,:]  
-       
+        nl_tile = tile[-1,:,:]
+
         transforms=torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -509,31 +516,31 @@ class VIT_MSNLTDataset(Dataset):
         nl_tile = nl_tile[None,:,:]
         raster=None
 
-        
+
         # 2. TIME-SERIES
-        tmp_mean, tmp_min, tmp_max = utils.build_series_from_dict(series_dict=self.tmp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        tmp_mean, tmp_min, tmp_max = utils.build_series_from_dict(series_dict=self.tmp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='temperature',
                                                     unit='year'
                                                     )
-        pcp_mean, pcp_min, pcp_max = utils.build_series_from_dict(series_dict=self.pcp_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        pcp_mean, pcp_min, pcp_max = utils.build_series_from_dict(series_dict=self.pcp_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='precipitation',
                                                     unit='year'
                                                     )
-        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict, 
-                                                    row=row, 
-                                                    series_length=5, 
-                                                    num_series=1, 
-                                                    num_years=5, 
+        rand_mean, rand_min, rand_max, _ = utils.build_series_from_dict(series_dict=self.conf_dict,
+                                                    row=row,
+                                                    series_length=5,
+                                                    num_series=1,
+                                                    num_years=5,
                                                     normalizer=self.normalizer,
                                                     variable_name='conflict',
                                                     unit='year'
@@ -548,7 +555,7 @@ class VIT_MSNLTDataset(Dataset):
         sequence = torch.cat((
             tmp_mean, tmp_min, tmp_max,pcp_mean, pcp_min, pcp_max, rand_mean, rand_min, rand_max # add conflict series
             ), dim=1)
-        
+
         sequence = sequence.swapaxes(0,1)
 
         value = row.wealthpooled.astype('float')

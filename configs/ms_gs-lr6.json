@@ -4,6 +4,6 @@
 	"decay":1e-4,
 	"n_epochs":100,
 
-	"checkpoint_path": "models/checkpoints/reproduction/ms_lr6_100ep_best/ms_",
-	"result_path": "models/results/reproduction/ms_lr6_100ep"
+	"checkpoint_path": "models/checkpoints/reproduction/ms_lr6_jitter_best/ms_",
+	"result_path": "models/results/reproduction/ms_lr6_jitter"
 }
