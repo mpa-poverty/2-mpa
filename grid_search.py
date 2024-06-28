@@ -22,7 +22,6 @@ from training import train_ms, train_msnl, train_msnlt, train_ts
 DATA_DIR = 'data/landsat_7_less/'
 DATASET = 'data/dataset_2013+.csv'
 FOLDS = 'data/dhs_incountry_folds_2013+.pkl'
-SCHEDULER = 'ReduceLROnPlateau'  # options: 'ReduceLROnPlateau' or 'CyclicLR'
 
 
 def cross_val_training(
@@ -80,10 +79,10 @@ def cross_val_training(
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=decay)
 
-        if SCHEDULER == "CyclicLR":
+        if model_config["scheduler"] == "CyclicLR":
             scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer=optimizer, max_lr=model_config['lr'] * 5,
                                                           base_lr=model_config['lr'], cycle_momentum=False)
-        elif SCHEDULER == "ReduceLROnPlateau":
+        elif model_config["scheduler"] == "ReduceLROnPlateau":
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, mode='min', factor=0.1,
                                                                    patience=4, threshold=0.0001, threshold_mode='rel',
                                                                    cooldown=0, min_lr=0, eps=1e-08)
@@ -202,6 +201,8 @@ def main(
     with open(model_config_filename) as f:
         model_config = json.load(f)
 
+    utils.set_seed(model_config["seed"])
+
     lr = model_config['lr']
     batch_size = model_config['batch_size']
     decay = model_config['decay']
@@ -215,7 +216,7 @@ def main(
         # BUILD MODEL
         results = cross_val_training(
             model_type=model_type,
-            save_path=model_config['checkpoint_path'],
+            save_path=model_config['train_checkpoint_path'],
             batch_size=batch_size,
             epochs=n_epoch,
             lr=lr,
@@ -232,7 +233,6 @@ def main(
 
 
 if __name__ == "__main__":
-    utils.set_seed()
     model_config_filename, model_type = parse_gridsearch_arguments()
     main(
         model_config_filename,

@@ -7,13 +7,15 @@
 	"batch_size": 64,
 	"decay":1e-2,
 	"n_epochs":70,
+	"scheduler": "CyclicLR",
+	"seed": 42,
 
 
-	"ms_ckpt":"models/checkpoints/reproduction/ms_best_specs_best/ms_",
-	"nl_ckpt":"models/checkpoints/reproduction/nl_best_specs_best/nl_",
-	"ts_ckpt":"models/checkpoints/reproduction/ts_best_specs_best/ts_",
+	"ms_ckpt":"models/checkpoints/reproduction/ms_seed42_best/ms_",
+	"nl_ckpt":"models/checkpoints/reproduction/nl_seed42_best/nl_",
+	"ts_ckpt":"models/checkpoints/reproduction/ts_seed42_best/ts_",
 
-
-	"checkpoint_path": "models/checkpoints/reproduction/msnlt_best_specs_best/msnlt_",
-	"result_path": "models/results/reproduction/msnlt_best_specs"
+	"train_checkpoint_path": "models/checkpoints/training/msnlt_seed42",
+	"test_checkpoint_path": "models/checkpoints/reproduction/msnlt_seed42_best/msnlt_",
+	"result_path": "models/results/reproduction/msnlt_seed42"
  }

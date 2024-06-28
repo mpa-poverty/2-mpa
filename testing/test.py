@@ -103,7 +103,7 @@ def main(
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load Model
-    load_path = model_config['checkpoint_path']
+    load_path = model_config['test_checkpoint_path']
 
     with open(fold_path, 'rb') as f:
         fold_dict = pickle.load(f)

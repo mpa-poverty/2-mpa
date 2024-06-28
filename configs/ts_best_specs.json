@@ -7,7 +7,10 @@
 	"batch_size": 256,
 	"decay":1e-2,
 	"n_epochs":50,
+	"scheduler": "CyclicLR",
+	"seed": 42,
 
-	"checkpoint_path": "models/checkpoints/reproduction/ts_best_specs_best/ts_",
-	"result_path": "models/results/reproduction/ts_best_specs"
+	"train_checkpoint_path": "models/checkpoints/training/ts_seed42",
+	"test_checkpoint_path": "models/checkpoints/reproduction/ts_seed42_best/ts_",
+	"result_path": "models/results/reproduction/ts_seed42"
 }

@@ -3,7 +3,10 @@
 	"batch_size": 64,
 	"decay":1e-5,
 	"n_epochs":100,
+	"scheduler": "ReduceLROnPlateau",
+	"seed": 42,
 
-	"checkpoint_path": "models/checkpoints/reproduction/ms_best_specs_1_best/ms_",
-	"result_path": "models/results/reproduction/ms_best_specs_1"
+	"train_checkpoint_path": "models/checkpoints/training/ms_seed42",
+	"test_checkpoint_path": "models/checkpoints/reproduction/ms_seed42_best/ms_",
+	"result_path": "models/results/reproduction/ms_seed42"
 }
