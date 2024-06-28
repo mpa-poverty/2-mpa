@@ -3,9 +3,7 @@ from models.double_branch_CNN import DoubleBranchCNN
 from models.triple_branch import TripleBranch
 from models.fcn_time_series import FCN
 from utils import transfer_learning as tl
-import torchgeo.models
 import torch
-import timm
 
 
 def build_ms(device, ms_ckpt=None):

@@ -11,7 +11,6 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import numpy as np
 import matplotlib
-import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt

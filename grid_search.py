@@ -13,12 +13,10 @@ import sys
 import pandas as pd
 import numpy as np
 import torch
-import itertools
 import torchmetrics
 from models import build_models
 from utils import utils
 from training import train_ms, train_msnl, train_msnlt, train_ts
-import torchinfo
 
 # CONSTANTS : DATASET
 DATA_DIR = 'data/landsat_7_less/'

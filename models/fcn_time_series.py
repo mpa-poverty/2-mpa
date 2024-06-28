@@ -1,6 +1,5 @@
 # @MDC, MARBEC, 2023
 
-import torch
 import torch.nn as nn
 
 class FCN(nn.Module):

@@ -3,7 +3,6 @@ import pandas as pd
 import json
 import pickle
 import torchmetrics
-import numpy as np
 from models.build_models import build_model
 from utils import utils
 
