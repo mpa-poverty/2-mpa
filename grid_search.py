@@ -234,6 +234,7 @@ def main(
 
 
 if __name__ == "__main__":
+    utils.set_seed()
     model_config_filename, model_type = parse_gridsearch_arguments()
     main(
         model_config_filename,

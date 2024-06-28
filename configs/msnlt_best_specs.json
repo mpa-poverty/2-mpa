@@ -14,6 +14,6 @@
 	"ts_ckpt":"models/checkpoints/reproduction/ts_best_specs_best/ts_",
 
 
-	"checkpoint_path": "models/checkpoints/training/msnlt_best_specs",
+	"checkpoint_path": "models/checkpoints/reproduction/msnlt_best_specs_best/msnlt_",
 	"result_path": "models/results/reproduction/msnlt_best_specs"
  }

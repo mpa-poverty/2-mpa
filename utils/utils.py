@@ -3,9 +3,10 @@
 # DESCRIPTION: Contains miscellaneous functions
 #
 # @MDC, 2023
+import os
+import random
 
-
-# IMPORT 
+# IMPORT
 import torch
 import pickle
 import numpy as np
@@ -132,6 +133,7 @@ def preprocess_landsat(raster, normalizer, jitter=None):
                 tmp_shape
             )
 
+        # Dataset normalization
         raster[i] = (raster[i] - normalizer[0][i]) / (normalizer[1][i])
 
     return raster
@@ -333,6 +335,19 @@ def build_series_from_dict(series_dict, row, series_length, num_series, num_year
         yearly_min_series = (yearly_min_series - normalizer[variable_name][0]) / normalizer[variable_name][1]
         yearly_max_series = (yearly_max_series - normalizer[variable_name][0]) / normalizer[variable_name][1]
         return yearly_mean_series, yearly_min_series, yearly_max_series, yearly_std_series
+
+
+def set_seed(seed: int = 42) -> None:
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    # When running on the CuDNN backend, two further options must be set
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    # Set a fixed value for the hash seed
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    print(f"Random seed set as {seed}")
 
 
 if __name__ == "__main__":

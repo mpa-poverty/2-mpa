@@ -67,6 +67,19 @@ class MSDataset(Dataset):
 
         # We only select MS bands
         tile = tile[:7, :, :]
+
+        # Close Raster (Safety Measure)
+        raster = None
+        if self.test_flag:
+            transforms = torch.nn.Sequential(
+                torchvision.transforms.CenterCrop(224),
+            )
+
+            tile = transforms(tile)
+
+            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
+            return idx, tile, value
+
         transforms = torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -74,12 +87,6 @@ class MSDataset(Dataset):
         )
 
         tile = transforms(tile)
-
-        # Close Raster (Safety Measure)
-        raster = None
-        if self.test_flag:
-            tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
-            return idx, tile, value
 
         tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], JITTER)
         return tile, value

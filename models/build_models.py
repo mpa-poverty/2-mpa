@@ -52,8 +52,8 @@ def build_ts(device, model_config, ckpt=None):
     return model.to(device)
 
 
-def build_triple_branch(device, branch_1, branch_2, branch_3, msnlt_ckpt=None, with_vit=False):
-    model = TripleBranch(branch_1=branch_1, branch_2=branch_2, branch_3=branch_3, output_features=1, with_vit=with_vit)
+def build_triple_branch(device, branch_1, branch_2, branch_3, msnlt_ckpt=None):
+    model = TripleBranch(branch_1=branch_1, branch_2=branch_2, branch_3=branch_3, output_features=1)
     if msnlt_ckpt is not None:
         model.load_state_dict(torch.load(msnlt_ckpt))
     return model.to(device)
@@ -77,7 +77,6 @@ def build_model(model_type, model_config, device, ms_ckpt=None, nl_ckpt=None, ts
             ms = build_ms(device=device, ms_ckpt=ms_ckpt)
             nl = build_nl(device=device, nl_ckpt=nl_ckpt)
             ts = build_ts(device=device, model_config=model_config, ckpt=ts_ckpt)
-            return build_triple_branch(device=device, branch_1=ms, branch_2=nl, branch_3=ts, msnlt_ckpt=msnlt_ckpt,
-                                       with_vit=False)
+            return build_triple_branch(device=device, branch_1=ms, branch_2=nl, branch_3=ts, msnlt_ckpt=msnlt_ckpt)
 
     return None

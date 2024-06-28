@@ -118,7 +118,7 @@ def main(
                                 nl_ckpt=None,
                                 ms_ckpt=None,
                                 model_type=model_type)
-        if model_type == "ms" or model_type == "vit":
+        if model_type == "ms":
             print(load_path + fold + ".pth")
             model = build_model(model_config=model_config,
                                 device=device,

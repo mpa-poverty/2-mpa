@@ -4,6 +4,6 @@
 	"decay":1e-5,
 	"n_epochs":100,
 
-	"checkpoint_path": "models/checkpoints/training/ms_best_specs",
-	"result_path": "models/results/reproduction/ms_best_specs"
+	"checkpoint_path": "models/checkpoints/reproduction/ms_best_specs_1_best/ms_",
+	"result_path": "models/results/reproduction/ms_best_specs_1"
 }

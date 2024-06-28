@@ -9,22 +9,18 @@ class TripleBranch(torch.nn.Module):
        at their last fully-connected layer.
 
     Args:
-        ms (torch.nn.Module): first branch cnn
-        nl (torch.nn.Module): second branch cnn
+        branch_1 (torch.nn.Module): first branch cnn
+        branch_2 (torch.nn.Module): second branch cnn
     """
 
-    def __init__(self, branch_1, branch_2, branch_3, output_features: int, with_vit: bool = False):
+    def __init__(self, branch_1, branch_2, branch_3, output_features: int):
         super(TripleBranch, self).__init__()
         self.branch_1 = branch_1
         self.branch_2 = branch_2
         self.branch_3 = branch_3
 
-        if not with_vit:
-            total_features = branch_1.fc.in_features + branch_2.fc.in_features + branch_3.fc.in_features
-            self.branch_1.fc = torch.nn.Identity()
-        else:
-            total_features = branch_1.head.in_features + branch_2.fc.in_features + branch_3.fc.in_features
-            self.branch_1.head = torch.nn.Identity()
+        total_features = branch_1.fc.in_features + branch_2.fc.in_features + branch_3.fc.in_features
+        self.branch_1.fc = torch.nn.Identity()
 
         self.branch_2.fc = torch.nn.Identity()
         self.branch_3.fc = torch.nn.Identity()
