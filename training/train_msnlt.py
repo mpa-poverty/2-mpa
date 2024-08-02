@@ -98,6 +98,7 @@ def finetune(
         train_dataloader: torch.utils.data.DataLoader,
         val_dataloader: torch.utils.data.DataLoader,
         optimizer: torch.optim.Optimizer,
+        scheduler: torch.optim.lr_scheduler,
         loss_fn: torch.nn.Module,
         epochs: int,
         ckpt_path: str,
@@ -115,6 +116,9 @@ def finetune(
                "test_r2": []
                }
 
+    patience = 10
+    best_loss = float('inf')
+
     # Loop through training and testing steps for a number of epochs
     for epoch in range(epochs):
         train_loss, train_r2 = train_step(model=model,
@@ -128,6 +132,8 @@ def finetune(
                                       loss_fn=loss_fn,
                                       device=device,
                                       r2=r2)
+
+        scheduler.step()
         torch.save(model.state_dict(), ckpt_path + str(int(epoch + 1)) + ".pth")
 
         # Print out what's happening
@@ -144,6 +150,16 @@ def finetune(
         results["train_r2"].append(train_r2.detach().cpu().numpy())
         results["test_loss"].append(test_loss)
         results["test_r2"].append(test_r2.detach().cpu().numpy())
+
+        # Early stopping
+        if test_loss < best_loss:
+            best_loss = test_loss
+            patience = 10  # Reset patience counter
+        else:
+            patience -= 1
+            if patience == 0:
+                break
+
     ### End new ###
 
     # Return the filled results at the end of the epochs

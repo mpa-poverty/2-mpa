@@ -140,6 +140,7 @@ def cross_val_training(
                 train_dataloader=train_loader,
                 val_dataloader=val_loader,
                 optimizer=optimizer,
+                scheduler=scheduler,
                 loss_fn=loss_fn,
                 epochs=epochs,
                 device=device,
@@ -187,7 +188,6 @@ def main(
 
     Args:
         model_config_filename (str): SE
-        data_config_filename (str): SE, default to 'configs/default_config.pkl MODEL_TYPE'
         model_type (str): possible values in ["ms","nl","msnl"]
     Returns:
         None
