@@ -1,3 +1,9 @@
+# MODELS/RESULTS/BUILD_MODELS.PY
+#
+# Description: This file contains the functions to build the models used in the project.
+#
+# @MDC, MARBEC, 2023
+
 import torchvision
 from models.double_branch_CNN import DoubleBranchCNN
 from models.triple_branch import TripleBranch
@@ -31,7 +37,7 @@ def build_nl(device, nl_ckpt):
 
 
 def build_msnl(ms, nl, device, msnl_ckpt=None):
-    """Returns an instance of MS ResNet18"""
+    """Returns a fusion of MS and NL"""
     if msnl_ckpt is not None:
         model = DoubleBranchCNN(ms, nl, output_features=1)
         model.load_state_dict(torch.load(msnl_ckpt))
@@ -41,6 +47,7 @@ def build_msnl(ms, nl, device, msnl_ckpt=None):
 
 
 def build_ts(device, model_config, ckpt=None):
+    """Returns an instance of TS FCN"""
     num_channels = model_config['num_channels']
     output_size = model_config['output_size']
     filter_size = model_config['filter_size']
@@ -51,6 +58,7 @@ def build_ts(device, model_config, ckpt=None):
 
 
 def build_triple_branch(device, branch_1, branch_2, branch_3, msnlt_ckpt=None):
+    """Returns a fusion of MS, NL, and TS"""
     model = TripleBranch(branch_1=branch_1, branch_2=branch_2, branch_3=branch_3, output_features=1)
     if msnlt_ckpt is not None:
         model.load_state_dict(torch.load(msnlt_ckpt))
@@ -59,6 +67,7 @@ def build_triple_branch(device, branch_1, branch_2, branch_3, msnlt_ckpt=None):
 
 def build_model(model_type, model_config, device, ms_ckpt=None, nl_ckpt=None, ts_ckpt=None, msnl_ckpt=None,
                 msnlt_ckpt=None):
+    """Builds a model based on the model type"""
     match model_type:
         case "ms":
             return build_ms(device=device, ms_ckpt=ms_ckpt)

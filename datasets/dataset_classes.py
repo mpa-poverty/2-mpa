@@ -1,3 +1,19 @@
+# DATASETS/DATASETS_CLASSES.PY
+#
+# DESCRIPTION: This file contains the classes for the different datasets used in the project.
+# The classes are used to load the data into the model.
+# The classes are:
+#   - MSDataset: Dataset class for the Multispectral dataset.
+#   - NLDataset: Dataset class for the Nightlights dataset.
+#   - MSNLDataset: Dataset class for the Multispectral and Nightlights dataset.
+#   - FCNDataset: Dataset class for the Forecasting dataset.
+#   - MSNLTDataset: Dataset class for the Multispectral, Nightlights, and Time-series dataset.
+# The classes are used in the grid_search.py file to load the data into the model.
+# The classes are used in the train_ms.py, train_ts.py, train_msnl.py, and train_msnlt.py files to load the data into
+# the model.
+#
+# @MDC, 2023
+
 import torch
 import os
 import numpy as np
@@ -34,6 +50,8 @@ class MSDataset(Dataset):
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
             root_dir (string): Directory with all the images.
+            normalizer (string): Path to the normalizer file.
+            test_flag (bool): Flag to indicate if the dataset is for testing.
         """
         self.dataframe = dataframe
         self.root_dir = root_dir
@@ -65,6 +83,7 @@ class MSDataset(Dataset):
 
         # Close Raster (Safety Measure)
         raster = None
+
         if self.test_flag:
             transforms = torch.nn.Sequential(
                 torchvision.transforms.CenterCrop(224),
@@ -75,6 +94,7 @@ class MSDataset(Dataset):
             tile = utils.preprocess_landsat(tile, self.normalizer['landsat_+_nightlights'], jitter=None)
             return idx, tile, value
 
+        # Data augmentation for training
         transforms = torch.nn.Sequential(
             torchvision.transforms.CenterCrop(224),
             torchvision.transforms.RandomHorizontalFlip(),
@@ -89,13 +109,13 @@ class MSDataset(Dataset):
 
 class NLDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, transform=None, test_flag=False):
+    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
             root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+            normalizer (string): Path to the normalizer file.
+            test_flag (bool): Flag to indicate if the dataset is for testing.
         """
         self.dataframe = dataframe
         self.root_dir = root_dir
@@ -143,15 +163,16 @@ class NLDataset(Dataset):
 
 class MSNLDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, test_flag=False, transform=None):
+    def __init__(self, dataframe, root_dir, normalizer=NORMALIZER, test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
             root_dir (string): Directory with all the images.
+            normalizer (string): Path to the normalizer file.
+            test_flag (bool): Flag to indicate if the dataset is for testing.
         """
         self.dataframe = dataframe
         self.root_dir = root_dir
-        self.transform = transform
         with open(normalizer, 'rb') as f:
             self.normalizer = pickle.load(f)
         self.test_flag = test_flag
@@ -200,11 +221,18 @@ class MSNLDataset(Dataset):
 
 class FCNDataset(Dataset):
 
-    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, conf_dict, conflict_dict=None, normalizer=None,
+    def __init__(self, dataframe, root_dir, pcp_dict, tmp_dict, conf_dict, conflict_dict=None, normalizer=NORMALIZER,
                  test_flag=False):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
+            root_dir (string): Directory with all the images.
+            pcp_dict (dict): Dictionary containing precipitation data.
+            tmp_dict (dict): Dictionary containing temperature data.
+            conf_dict (dict): Dictionary containing conflict data.
+            conflict_dict (dict): Dictionary containing conflict data.
+            normalizer (string): Path to the normalizer file.
+            test_flag (bool): Flag to indicate if the dataset is for testing.
         """
         self.dataframe = dataframe
         self.normalizer = normalizer
@@ -212,10 +240,9 @@ class FCNDataset(Dataset):
         self.test_flag = test_flag
         self.pcp_dict = pcp_dict
         self.tmp_dict = tmp_dict
-        # ADD DICTIONNARY HERE
         self.conf_dict = conf_dict
         self.conflict_dict = conflict_dict
-        with open(NORMALIZER, 'rb') as f:
+        with open(normalizer, 'rb') as f:
             self.normalizer = pickle.load(f)
 
     def __len__(self):
@@ -277,8 +304,11 @@ class MSNLTDataset(Dataset):
         """
         Args:
             dataframe (Pandas DataFrame): Pandas DataFrame containing image file names and labels.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+            root_dir (string): Directory with all the images.
+            pcp_dict (dict): Dictionary containing precipitation data.
+            tmp_dict (dict): Dictionary containing temperature data.
+            conf_dict (dict): Dictionary containing conflict data.
+            test_flag (bool): Flag to indicate if the dataset is for testing.
         """
         self.dataframe = dataframe
         self.root_dir = root_dir

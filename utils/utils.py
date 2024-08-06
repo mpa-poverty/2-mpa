@@ -18,6 +18,7 @@ from shapely.geometry import Point, Polygon
 from datasets import dataset_classes
 
 
+# Function unused in the current version of the project
 def configure_optimizer(config, model):
     if config['optimizer'] in ("Adam", "adam"):
         return torch.optim.Adam(model.parameters(), lr=config['learning_rate'], weight_decay=config['weight_decay'])
@@ -27,6 +28,7 @@ def configure_optimizer(config, model):
         raise KeyError(config['optimizer'])
 
 
+# Function unused in the current version of the project
 def configure_loss(config):
     if config['loss'] in ("mse", "l2"):
         return torch.nn.MSELoss()
@@ -37,6 +39,7 @@ def configure_loss(config):
     return
 
 
+# Function unused in the current version of the project
 def compute_average_crossval_results(results: dict):
     result_list = []
     for fold in results:
@@ -47,6 +50,7 @@ def compute_average_crossval_results(results: dict):
     return result_list
 
 
+# Function unused in the current version of the project
 def convert_csv_to_epsg(csv_name, from_epsg="EPSG:4326", to_epsg="EPSG:3857"):
     # creating a geometry column 
     dataset = pd.read_csv(csv_name)
@@ -58,6 +62,7 @@ def convert_csv_to_epsg(csv_name, from_epsg="EPSG:4326", to_epsg="EPSG:3857"):
     return gdf
 
 
+# Function unused in the current version of the project
 def add_bounding_box_from_geometry(row, resolution=30, extent=127):
     offset = extent * resolution
     p = row.geometry
@@ -68,6 +73,7 @@ def add_bounding_box_from_geometry(row, resolution=30, extent=127):
     return bounding_box
 
 
+# Function unused in the current version of the project
 def make_config_picklefile(
         path: str,
         csv_path: str,
@@ -79,6 +85,18 @@ def make_config_picklefile(
         train_transform,
         test_transform
 ):
+    """ Create a pickle file with the configuration for the dataset
+    Args:
+        path (str): path to save the pickle file
+        csv_path (str): path to the csv file
+        fold_path (str): path to the fold file
+        mean (list): mean values for the dataset
+        std (list): standard deviation values for the dataset
+        max_ (list): max values for the dataset
+        min_ (list): min values for the dataset
+        train_transform (torchvision.transforms): transform for the training dataset
+        test_transform (torchvision.transforms): transform for the test dataset
+    """
     config_file = dict()
     config_file['csv'] = csv_path
     config_file['fold'] = fold_path
@@ -103,8 +121,11 @@ def standardize_countryname(countryname: str) -> str:
         return 'United Republic of Tanzania'
     return countryname.replace('_', ' ').title()
 
-
+# Function unused in the current version of the project
 def preprocess_viirs_nightlights(viirs_tile):
+    """ Preprocess a VIIRS raster
+    Args:
+        viirs_tile (torch.tensor): VIIRS raster"""
     viirs_tile = viirs_tile.numpy()
     tile_shape = viirs_tile.shape
     # Resize to match arc.second-1 pixels
@@ -123,6 +144,12 @@ def preprocess_viirs_nightlights(viirs_tile):
 
 
 def preprocess_landsat(raster, normalizer, jitter=None):
+    """ Preprocess a Landsat raster
+    Args:
+        raster (torch.tensor): 7-band raster
+        normalizer (tuple): mean and std for each band
+        jitter (torchvision.transforms.ColorJitter): color jittering transform"""
+
     for i in range(7):
 
         # Color Jittering transform
@@ -140,6 +167,7 @@ def preprocess_landsat(raster, normalizer, jitter=None):
 
 
 def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_flag=False):
+    """ Return the training and validation datasets for the given model type """
     match model_type:
         case 'ms':
             return (
@@ -226,6 +254,7 @@ def datasets_from_model_type(model_type, data, data_dir, fold_dict, fold, test_f
 
 
 def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_flag=True):
+    """ Return the test dataset for the given model type """
     match model_type:
         case 'ms':
             return (
@@ -288,7 +317,7 @@ def testset_from_model_type(model_type, data, data_dir, fold_dict, fold, test_fl
 
 def build_series_from_dict(series_dict, row, series_length, num_series, num_years, normalizer, variable_name,
                            unit='year'):
-    '''
+    """
     Builds a series from a dictionary of monthly or yearly values
     series_dict:   dictionnary with stored values
     row:           observation from dataset
@@ -298,7 +327,7 @@ def build_series_from_dict(series_dict, row, series_length, num_series, num_year
     normalizer:    dict with mean and std of variables' values over the dataset to normalize the series
     variable_name  key to get the mean and std in the normalizer dict
     unit:          'year' if yearly values, 'monthly' if monthly values in series
-    '''
+    """
     # create empty series with proper dimensions
     monthly_series = np.zeros((series_length, num_series))
     yearly_mean_series = np.zeros((series_length, num_series))
@@ -338,6 +367,7 @@ def build_series_from_dict(series_dict, row, series_length, num_series, num_year
 
 
 def set_seed(seed: int = 42) -> None:
+    """ Set the seed for reproducibility """
     np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)

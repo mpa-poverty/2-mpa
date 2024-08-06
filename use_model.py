@@ -1,4 +1,8 @@
-
+# USE_MODEL.PY
+#
+# Description: This script is used to predict the wealth of a given dataset using a pre-trained model.
+#
+# @MDC, MARBEC, 2023
 
 import sys
 import torch
@@ -9,6 +13,7 @@ import utils
 
 
 def predict_wealth(df, model, dataloader, device):
+    """Predicts wealth from a model."""
     results = dict()
     # Put model in eval mode
     model.eval() 
@@ -56,6 +61,7 @@ def main(
         series_path:str,
         ckpt_path='models/checkpoints/'
         ):
+    """Main function to predict wealth from a model. """
 
     # INIT VARIABLES
     ckpt_path += model_type+'_'

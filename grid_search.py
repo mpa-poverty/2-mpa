@@ -40,7 +40,7 @@ def cross_val_training(
     """Trains 5 models given a single configuration
 
     Args:
-        model_type (str): possible values in ["ms","nl","msnl"]
+        model_type (str): possible values in ["ms","nl","msnl", "ts", "msnlt"]
         FROM CONFIG FILE:
             batch_size (int): training batch size
             epochs (int): total epochs during training
@@ -48,7 +48,6 @@ def cross_val_training(
             decay (float): weight decay during training
             loss_fn (torch.nn): loss function for training, MSE by default.
         save_path (str): root path to save models state_dicts to
-        data_config (_type_): default input data transforms
         model_config (_type_): model config dictionary 
         r2 (torch.nn): R2 torchmetrics 
         device (str): "cuda" if GPU is available else "cpu"
@@ -188,7 +187,7 @@ def main(
 
     Args:
         model_config_filename (str): SE
-        model_type (str): possible values in ["ms","nl","msnl"]
+        model_type (str): possible values in ["ms","nl","msnl", "ts", "msnlt"]
     Returns:
         None
     """

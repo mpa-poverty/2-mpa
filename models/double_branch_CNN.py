@@ -1,3 +1,7 @@
+# MODELS/RESULTS/DOUBLE_BRANCH_CNN.PY
+#
+# Description: Custom Double Branch Network, that takes two separate CNNs
+#
 # @MDC, MARBEC, 2023
 
 import torch

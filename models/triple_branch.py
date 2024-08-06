@@ -1,3 +1,7 @@
+# MODELS/RESULTS/TRIPLE_BRANCH.PY
+#
+# Description: Custom Triple Branch Network, that takes three separate CNNs
+#
 # @MDC, MARBEC, 2023
 
 import torch
@@ -11,9 +15,12 @@ class TripleBranch(torch.nn.Module):
     Args:
         branch_1 (torch.nn.Module): first branch cnn
         branch_2 (torch.nn.Module): second branch cnn
+        branch_3 (torch.nn.Module): third branch fcn
+        output_features (int): number of output features
+
     """
 
-    def __init__(self, branch_1, branch_2, branch_3, output_features: int):
+    def __init__(self, branch_1, branch_2, branch_3, output_features=1):
         super(TripleBranch, self).__init__()
         self.branch_1 = branch_1
         self.branch_2 = branch_2
@@ -25,7 +32,7 @@ class TripleBranch(torch.nn.Module):
         self.branch_2.fc = torch.nn.Identity()
         self.branch_3.fc = torch.nn.Identity()
 
-        self.fc = torch.nn.Linear(total_features, 1)
+        self.fc = torch.nn.Linear(total_features, output_features)
 
     def forward(self, x1, x2, x3):
         x1 = 0.9 * self.branch_1(x1)

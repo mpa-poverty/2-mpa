@@ -1,3 +1,11 @@
+# TRAINING/TRAIN_MSNLT.PY
+#
+# Description: Training loop for MSNLT model training and validation.
+#              This script is used in grid_search.py to train the model
+#              on each fold of the cross-validation split.
+#
+# @MDC, 2023
+
 import torch
 from tqdm import tqdm
 from typing import Dict, List
@@ -67,7 +75,7 @@ def val_step(
 
     # Turn on inference context manager
     # with torch.inference_mode():
-    with torch.no_grad():  # TODO: comparer avec inference_mode()
+    with torch.no_grad():
 
         # Loop through DataLoader batches
         for batch, (x1, x2, x3, y) in enumerate(tqdm(dataloader)):
@@ -105,7 +113,7 @@ def finetune(
         device: torch.device,
         r2
 ) -> Dict[str, List]:
-    """Fine-tunes a late fusion of two pre-trained PyTorch models.
+    """Fine-tunes a late fusion of three pre-trained PyTorch models.
     Calculates, prints and stores evaluation metrics throughout. 
     """
 

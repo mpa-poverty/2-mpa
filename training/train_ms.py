@@ -1,3 +1,11 @@
+# TRAINING/TRAIN_MS.PY
+#
+# Description: Training loop for MS model training and validation.
+#              This script is used in grid_search.py to train the model
+#              on each fold of the cross-validation split.
+#
+# @MDC, 2023
+
 import torch
 from tqdm import tqdm
 from typing import Dict, List

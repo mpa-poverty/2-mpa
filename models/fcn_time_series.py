@@ -1,8 +1,18 @@
+# MODELS/RESULTS/FCN_TIME_SERIES.PY
+#
+# Description: Fully Convolutional Network for time series classification.
+#
 # @MDC, MARBEC, 2023
 
 import torch.nn as nn
 
 class FCN(nn.Module):
+    """Fully Convolutional Network for time series classification.
+    Args:
+        num_channels (int): number of input channels
+        filter_size (int): size of the filters
+        output_size (int): number of output features
+    """
     def __init__(self, num_channels, filter_size, output_size=1):
         super(FCN, self).__init__()
         self.conv_layers = nn.Sequential(

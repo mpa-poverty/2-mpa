@@ -1,3 +1,10 @@
+# TESTING/TEST.PY
+#
+# Description: This script is used to test the model on the test set. The script takes in the model checkpoint path,
+# the fold path, the dataset, and the model type as input and returns the dataset with the predicted wealth column.
+#
+# @MDC, 2023
+
 import torch
 import pandas as pd
 import json
