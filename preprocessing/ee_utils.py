@@ -300,14 +300,14 @@ class LandsatSR:
         self.end_date = end_date
         
         if int(self.start_date[:4]) >= 2013:
-            self.l8 = self.init_coll('LANDSAT/LC08/C01/T1_SR').map(self.rename_l8).map(self.rescale_l8)
+            self.l8 = self.init_coll('LANDSAT/LC08/C02/T1_L2').map(self.rename_l8).map(self.rescale_l8)
             self.merged = self.l8.sort('system:time_start')
         if int(self.start_date[:4]) < 1999:
-            self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
+            self.l5 = self.init_coll('LANDSAT/LC08/C02/T1_L2').map(self.rename_l57).map(self.rescale_l57)
             self.merged = self.l5.sort('system:time_start') 
         else:
-            self.l5 = self.init_coll('LANDSAT/LT05/C01/T1_SR').map(self.rename_l57).map(self.rescale_l57)
-            self.l7 = self.init_coll("LANDSAT/LE07/C01/T1_SR").map(self.rename_l57).map(self.rescale_l57)
+            self.l5 = self.init_coll('LANDSAT/LC08/C02/T1_L2').map(self.rename_l57).map(self.rescale_l57)
+            self.l7 = self.init_coll("LANDSAT/LC08/C02/T1_L2").map(self.rename_l57).map(self.rescale_l57)
             self.merged = self.l5.merge(self.l7).merge(self.l8).sort('system:time_start') 
         
     def init_coll(self, name: str) -> ee.ImageCollection:
